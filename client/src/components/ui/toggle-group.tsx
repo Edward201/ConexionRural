@@ -14,6 +14,20 @@ const ToggleGroupContext = React.createContext<
   variant: "default",
 })
 
+/**
+ * @typedef ToggleGroupProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {object} [variant] - The variant of the toggle group.
+ * @property {object} [size] - The size of the toggle group.
+ * @property {React.ReactNode} children - The content of the toggle group.
+ */
+
+/**
+ * A component that displays a group of toggle buttons.
+ * @param {ToggleGroupProps & React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root> & VariantProps<typeof toggleVariants>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof ToggleGroupPrimitive.Root>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered toggle group.
+ */
 const ToggleGroup = React.forwardRef<
   React.ElementRef<typeof ToggleGroupPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root> &
@@ -32,6 +46,20 @@ const ToggleGroup = React.forwardRef<
 
 ToggleGroup.displayName = ToggleGroupPrimitive.Root.displayName
 
+/**
+ * @typedef ToggleGroupItemProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the toggle group item.
+ * @property {object} [variant] - The variant of the toggle group item.
+ * @property {object} [size] - The size of the toggle group item.
+ */
+
+/**
+ * A component that displays a single toggle button in a toggle group.
+ * @param {ToggleGroupItemProps & React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Item> & VariantProps<typeof toggleVariants>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof ToggleGroupPrimitive.Item>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered toggle group item.
+ */
 const ToggleGroupItem = React.forwardRef<
   React.ElementRef<typeof ToggleGroupPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Item> &

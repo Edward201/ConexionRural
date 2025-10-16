@@ -8,23 +8,24 @@ import {
 } from "@/lib/analytics";
 
 /**
- * Hook para tracking de analytics
- * Trackea automáticamente cada cambio de ruta
+ * A hook for tracking analytics.
+ * It automatically tracks route changes and provides a function to manually track conversions.
+ * @returns {{logConversion: (type: string, value?: number) => void}} - An object containing the logConversion function.
  */
 export function useAnalytics() {
   const [location] = useWouterLocation();
 
-  // Configurar auto-tracking una sola vez
+  // Set up auto-tracking once.
   useEffect(() => {
     setupAutoTracking();
   }, []);
 
-  // Trackear cada cambio de página
+  // Track each page change.
   useEffect(() => {
     const url = location;
     const title = document.title;
 
-    // Pequeño delay para asegurar que el título se haya actualizado
+    // A small delay to ensure the title has been updated.
     const timeoutId = setTimeout(() => {
       trackPageView(url, document.title || title);
       startTrackingTime();
@@ -33,7 +34,7 @@ export function useAnalytics() {
     return () => clearTimeout(timeoutId);
   }, [location]);
 
-  // Función para trackear conversiones manualmente
+  // A function to manually track conversions.
   const logConversion = useCallback(
     (type: string, value?: number) => {
       trackConversion(type, value);

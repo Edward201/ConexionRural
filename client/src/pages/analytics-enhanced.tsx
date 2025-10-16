@@ -30,13 +30,17 @@ interface AnalyticsOverview {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
+/**
+ * A page that displays enhanced analytics.
+ * @returns {JSX.Element} The rendered analytics enhanced page.
+ */
 export default function AnalyticsEnhancedPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [timeRange, setTimeRange] = useState("30");
   const [compareEnabled, setCompareEnabled] = useState(false);
   
-  // Filtros avanzados
+  // Advanced filters
   const [filters, setFilters] = useState({
     source: "all",
     deviceType: "all",
@@ -45,7 +49,7 @@ export default function AnalyticsEnhancedPage() {
   
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  // Verificar autenticación
+  // Verify authentication
   const { data: authData, isLoading: authLoading } = useQuery({
     queryKey: ["auth"],
     queryFn: async () => {
@@ -53,7 +57,7 @@ export default function AnalyticsEnhancedPage() {
         credentials: "include",
       });
 
-      if (!response.ok) throw new Error("No autenticado");
+      if (!response.ok) throw new Error("Not authenticated");
       return response.json();
     },
     retry: false,
@@ -67,15 +71,19 @@ export default function AnalyticsEnhancedPage() {
       if (authData.user.role !== "admin") {
         toast({
           variant: "destructive",
-          title: "Acceso denegado",
-          description: "Solo administradores pueden acceder a analytics",
+          title: "Access denied",
+          description: "Only administrators can access analytics",
         });
         setLocation("/");
       }
     }
   }, [authData, authLoading, setLocation]);
 
-  // Construir query string con filtros
+  /**
+   * Builds a query string with filters.
+   * @param {string} days - The number of days for the time range.
+   * @returns {string} The query string.
+   */
   const buildQueryString = (days: string) => {
     const params = new URLSearchParams({ days });
     if (filters.source !== "all") params.append("source", filters.source);
@@ -84,27 +92,27 @@ export default function AnalyticsEnhancedPage() {
     return params.toString();
   };
 
-  // Datos período actual
+  // Current period data
   const { data: overviewData } = useQuery({
     queryKey: ["analytics-overview", timeRange, filters],
     queryFn: async () => {
       const response = await fetch(`/api/analytics/overview?${buildQueryString(timeRange)}`, {
         credentials: "include",
       });
-      if (!response.ok) throw new Error("Error al obtener overview");
+      if (!response.ok) throw new Error("Error getting overview");
       return response.json();
     },
     enabled: !!authData,
   });
 
-  // Datos período anterior (para comparación)
+  // Previous period data (for comparison)
   const { data: overviewPreviousData } = useQuery({
     queryKey: ["analytics-overview-previous", timeRange, filters],
     queryFn: async () => {
       const response = await fetch(`/api/analytics/overview?${buildQueryString(String(Number(timeRange) * 2))}`, {
         credentials: "include",
       });
-      if (!response.ok) throw new Error("Error al obtener overview anterior");
+      if (!response.ok) throw new Error("Error getting previous overview");
       return response.json();
     },
     enabled: !!authData && compareEnabled,
@@ -116,7 +124,7 @@ export default function AnalyticsEnhancedPage() {
       const response = await fetch(`/api/analytics/sources?${buildQueryString(timeRange)}`, {
         credentials: "include",
       });
-      if (!response.ok) throw new Error("Error al obtener fuentes");
+      if (!response.ok) throw new Error("Error getting sources");
       return response.json();
     },
     enabled: !!authData,
@@ -128,7 +136,7 @@ export default function AnalyticsEnhancedPage() {
       const response = await fetch(`/api/analytics/pages?${buildQueryString(timeRange)}`, {
         credentials: "include",
       });
-      if (!response.ok) throw new Error("Error al obtener páginas");
+      if (!response.ok) throw new Error("Error getting pages");
       return response.json();
     },
     enabled: !!authData,
@@ -140,7 +148,7 @@ export default function AnalyticsEnhancedPage() {
       const response = await fetch(`/api/analytics/devices?${buildQueryString(timeRange)}`, {
         credentials: "include",
       });
-      if (!response.ok) throw new Error("Error al obtener dispositivos");
+      if (!response.ok) throw new Error("Error getting devices");
       return response.json();
     },
     enabled: !!authData,
@@ -152,7 +160,7 @@ export default function AnalyticsEnhancedPage() {
       const response = await fetch(`/api/analytics/conversions?${buildQueryString(timeRange)}`, {
         credentials: "include",
       });
-      if (!response.ok) throw new Error("Error al obtener conversiones");
+      if (!response.ok) throw new Error("Error getting conversions");
       return response.json();
     },
     enabled: !!authData,
@@ -164,7 +172,7 @@ export default function AnalyticsEnhancedPage() {
       const response = await fetch(`/api/analytics/timeline?${buildQueryString(timeRange)}`, {
         credentials: "include",
       });
-      if (!response.ok) throw new Error("Error al obtener timeline");
+      if (!response.ok) throw new Error("Error getting timeline");
       return response.json();
     },
     enabled: !!authData,
@@ -173,7 +181,7 @@ export default function AnalyticsEnhancedPage() {
   if (authLoading || !currentUser) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-lg">Cargando analytics...</p>
+        <p className="text-lg">Loading analytics...</p>
       </div>
     );
   }
@@ -191,7 +199,12 @@ export default function AnalyticsEnhancedPage() {
     ? overviewPreviousData.overview
     : null;
 
-  // Calcular cambios porcentuales
+  /**
+   * Calculates the percentage change between two numbers.
+   * @param {number} current - The current value.
+   * @param {number} previous - The previous value.
+   * @returns {number} The percentage change.
+   */
   const calculateChange = (current: number, previous: number) => {
     if (!previous) return 0;
     return ((current - previous) / previous) * 100;
@@ -208,16 +221,24 @@ export default function AnalyticsEnhancedPage() {
   }, []) || [];
 
   const userTypeData = [
-    { name: "Nuevos", value: overview.newUsers },
-    { name: "Recurrentes", value: overview.returningUsers },
+    { name: "New", value: overview.newUsers },
+    { name: "Returning", value: overview.returningUsers },
   ];
 
+  /**
+   * Formats a time in seconds to a string in the format "Xm Ys".
+   * @param {number} seconds - The time in seconds.
+   * @returns {string} The formatted time.
+   */
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}m ${secs}s`;
   };
 
+  /**
+   * Clears the filters.
+   */
   const clearFilters = () => {
     setFilters({ source: "all", deviceType: "all", page: "" });
   };
@@ -231,7 +252,7 @@ export default function AnalyticsEnhancedPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Web Analytics</h1>
-            <p className="text-gray-600 mt-1">Panel de métricas y estadísticas del sitio</p>
+            <p className="text-gray-600 mt-1">Site metrics and statistics panel</p>
           </div>
           <div className="flex gap-2 items-center">
             <Button
@@ -239,23 +260,23 @@ export default function AnalyticsEnhancedPage() {
               size="sm"
               onClick={() => setCompareEnabled(!compareEnabled)}
             >
-              {compareEnabled ? "Comparando" : "Comparar Períodos"}
+              {compareEnabled ? "Comparing" : "Compare Periods"}
             </Button>
             <Button variant="outline" onClick={() => setLocation("/dashboard")}>
-              Volver
+              Back
             </Button>
           </div>
         </div>
 
-        {/* Filtros Avanzados */}
+        {/* Advanced Filters */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Filter className="h-5 w-5" />
-              Filtros Avanzados
+              Advanced Filters
               {hasActiveFilters && (
                 <Badge variant="secondary" className="ml-2">
-                  Filtros Activos
+                  Active Filters
                 </Badge>
               )}
             </CardTitle>
@@ -263,55 +284,55 @@ export default function AnalyticsEnhancedPage() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
-                <Label>Período</Label>
+                <Label>Period</Label>
                 <Select value={timeRange} onValueChange={setTimeRange}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="7">Últimos 7 días</SelectItem>
-                    <SelectItem value="30">Últimos 30 días</SelectItem>
-                    <SelectItem value="90">Últimos 90 días</SelectItem>
+                    <SelectItem value="7">Last 7 days</SelectItem>
+                    <SelectItem value="30">Last 30 days</SelectItem>
+                    <SelectItem value="90">Last 90 days</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label>Fuente de Tráfico</Label>
+                <Label>Traffic Source</Label>
                 <Select value={filters.source} onValueChange={(value) => setFilters({...filters, source: value})}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas las fuentes</SelectItem>
-                    <SelectItem value="organic">Orgánico</SelectItem>
-                    <SelectItem value="social">Redes Sociales</SelectItem>
-                    <SelectItem value="direct">Directo</SelectItem>
-                    <SelectItem value="referral">Referido</SelectItem>
+                    <SelectItem value="all">All sources</SelectItem>
+                    <SelectItem value="organic">Organic</SelectItem>
+                    <SelectItem value="social">Social Networks</SelectItem>
+                    <SelectItem value="direct">Direct</SelectItem>
+                    <SelectItem value="referral">Referral</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label>Dispositivo</Label>
+                <Label>Device</Label>
                 <Select value={filters.deviceType} onValueChange={(value) => setFilters({...filters, deviceType: value})}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los dispositivos</SelectItem>
+                    <SelectItem value="all">All devices</SelectItem>
                     <SelectItem value="desktop">Desktop</SelectItem>
-                    <SelectItem value="mobile">Móvil</SelectItem>
+                    <SelectItem value="mobile">Mobile</SelectItem>
                     <SelectItem value="tablet">Tablet</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label>Página</Label>
+                <Label>Page</Label>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="/ruta/pagina"
+                    placeholder="/page/path"
                     value={filters.page}
                     onChange={(e) => setFilters({...filters, page: e.target.value})}
                   />
@@ -326,10 +347,10 @@ export default function AnalyticsEnhancedPage() {
           </CardContent>
         </Card>
 
-        {/* Tarjetas de métricas principales con comparación */}
+        {/* Main metric cards with comparison */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <MetricCard
-            title="Visitas Totales"
+            title="Total Visits"
             icon={<Eye className="h-4 w-4 text-blue-600" />}
             value={overview.totalVisits}
             previous={overviewPrevious?.totalVisits}
@@ -337,74 +358,74 @@ export default function AnalyticsEnhancedPage() {
           />
 
           <MetricCard
-            title="Usuarios Nuevos"
+            title="New Users"
             icon={<Users className="h-4 w-4 text-green-600" />}
             value={overview.newUsers}
             previous={overviewPrevious?.newUsers}
             compareEnabled={compareEnabled}
-            subtitle={`${overview.returningUsers} recurrentes`}
+            subtitle={`${overview.returningUsers} returning`}
             valueColor="text-green-600"
           />
 
           <MetricCard
-            title="Tiempo Promedio"
+            title="Average Time"
             icon={<Clock className="h-4 w-4 text-purple-600" />}
             value={formatTime(overview.avgTimeOnPage)}
             previous={overviewPrevious ? formatTime(overviewPrevious.avgTimeOnPage) : undefined}
             compareEnabled={compareEnabled}
-            subtitle="Por visita"
+            subtitle="Per visit"
             valueColor="text-purple-600"
             isTime
           />
 
           <MetricCard
-            title="Tasa de Rebote"
+            title="Bounce Rate"
             icon={<MousePointerClick className="h-4 w-4 text-orange-600" />}
             value={`${overview.bounceRate}%`}
             previous={overviewPrevious ? `${overviewPrevious.bounceRate}%` : undefined}
             compareEnabled={compareEnabled}
-            subtitle={overview.bounceRate < 40 ? "Excelente" : overview.bounceRate < 60 ? "Buena" : "Mejorable"}
+            subtitle={overview.bounceRate < 40 ? "Excellent" : overview.bounceRate < 60 ? "Good" : "Improvable"}
             valueColor="text-orange-600"
             isPercent
           />
 
           <MetricCard
-            title="Conversiones"
+            title="Conversions"
             icon={<Target className="h-4 w-4 text-red-600" />}
             value={overview.conversions}
             previous={overviewPrevious?.conversions}
             compareEnabled={compareEnabled}
-            subtitle={`${overview.totalVisits > 0 ? ((overview.conversions / overview.totalVisits) * 100).toFixed(2) : 0}% tasa de conversión`}
+            subtitle={`${overview.totalVisits > 0 ? ((overview.conversions / overview.totalVisits) * 100).toFixed(2) : 0}% conversion rate`}
             valueColor="text-red-600"
           />
 
           <MetricCard
-            title="Promedio Diario"
+            title="Daily Average"
             icon={<TrendingUp className="h-4 w-4 text-indigo-600" />}
             value={Math.round(overview.totalVisits / Number(timeRange))}
             previous={overviewPrevious ? Math.round(overviewPrevious.totalVisits / Number(timeRange)) : undefined}
             compareEnabled={compareEnabled}
-            subtitle="Visitas por día"
+            subtitle="Visits per day"
             valueColor="text-indigo-600"
           />
         </div>
 
         <Tabs defaultValue="traffic" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="traffic">Tráfico</TabsTrigger>
-            <TabsTrigger value="pages">Páginas</TabsTrigger>
-            <TabsTrigger value="devices">Dispositivos</TabsTrigger>
-            <TabsTrigger value="conversions">Conversiones</TabsTrigger>
+            <TabsTrigger value="traffic">Traffic</TabsTrigger>
+            <TabsTrigger value="pages">Pages</TabsTrigger>
+            <TabsTrigger value="devices">Devices</TabsTrigger>
+            <TabsTrigger value="conversions">Conversions</TabsTrigger>
           </TabsList>
 
-          {/* Tab: Tráfico */}
+          {/* Tab: Traffic */}
           <TabsContent value="traffic" className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Gráfico de Timeline */}
+              {/* Timeline Chart */}
               <Card className="col-span-2">
                 <CardHeader>
-                  <CardTitle>Visitas en el Tiempo</CardTitle>
-                  <CardDescription>Evolución diaria de visitas y conversiones</CardDescription>
+                  <CardTitle>Visits Over Time</CardTitle>
+                  <CardDescription>Daily evolution of visits and conversions</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
@@ -414,19 +435,19 @@ export default function AnalyticsEnhancedPage() {
                       <YAxis />
                       <Tooltip />
                       <Legend />
-                      <Line type="monotone" dataKey="visits" stroke="#0088FE" name="Visitas" />
-                      <Line type="monotone" dataKey="newUsers" stroke="#00C49F" name="Nuevos Usuarios" />
-                      <Line type="monotone" dataKey="conversions" stroke="#FF8042" name="Conversiones" />
+                      <Line type="monotone" dataKey="visits" stroke="#0088FE" name="Visits" />
+                      <Line type="monotone" dataKey="newUsers" stroke="#00C49F" name="New Users" />
+                      <Line type="monotone" dataKey="conversions" stroke="#FF8042" name="Conversions" />
                     </LineChart>
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
 
-              {/* Fuentes de Tráfico */}
+              {/* Traffic Sources */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Fuentes de Tráfico</CardTitle>
-                  <CardDescription>De dónde vienen tus visitantes</CardDescription>
+                  <CardTitle>Traffic Sources</CardTitle>
+                  <CardDescription>Where your visitors come from</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -441,18 +462,18 @@ export default function AnalyticsEnhancedPage() {
                             )}
                           </div>
                         </div>
-                        <Badge variant="secondary">{source.visits} visitas</Badge>
+                        <Badge variant="secondary">{source.visits} visits</Badge>
                       </div>
                     ))}
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Usuarios Nuevos vs Recurrentes */}
+              {/* New vs Returning Users */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Tipo de Usuario</CardTitle>
-                  <CardDescription>Nuevos vs Recurrentes</CardDescription>
+                  <CardTitle>User Type</CardTitle>
+                  <CardDescription>New vs Returning</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={200}>
@@ -479,20 +500,20 @@ export default function AnalyticsEnhancedPage() {
             </div>
           </TabsContent>
 
-          {/* Tab: Páginas */}
+          {/* Tab: Pages */}
           <TabsContent value="pages">
             <Card>
               <CardHeader>
-                <CardTitle>Páginas Más Visitadas</CardTitle>
-                <CardDescription>Top 10 páginas con más tráfico</CardDescription>
+                <CardTitle>Most Visited Pages</CardTitle>
+                <CardDescription>Top 10 pages with the most traffic</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Página</TableHead>
-                      <TableHead>Visitas</TableHead>
-                      <TableHead>Tiempo Promedio</TableHead>
+                      <TableHead>Page</TableHead>
+                      <TableHead>Visits</TableHead>
+                      <TableHead>Average Time</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -516,13 +537,13 @@ export default function AnalyticsEnhancedPage() {
             </Card>
           </TabsContent>
 
-          {/* Tab: Dispositivos */}
+          {/* Tab: Devices */}
           <TabsContent value="devices" className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Dispositivos</CardTitle>
-                  <CardDescription>Distribución por tipo de dispositivo</CardDescription>
+                  <CardTitle>Devices</CardTitle>
+                  <CardDescription>Distribution by device type</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={250}>
@@ -549,8 +570,8 @@ export default function AnalyticsEnhancedPage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Detalles de Dispositivos</CardTitle>
-                  <CardDescription>Navegadores y sistemas operativos</CardDescription>
+                  <CardTitle>Device Details</CardTitle>
+                  <CardDescription>Browsers and operating systems</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -582,12 +603,12 @@ export default function AnalyticsEnhancedPage() {
             </div>
           </TabsContent>
 
-          {/* Tab: Conversiones */}
+          {/* Tab: Conversions */}
           <TabsContent value="conversions">
             <Card>
               <CardHeader>
-                <CardTitle>Conversiones por Tipo</CardTitle>
-                <CardDescription>Objetivos alcanzados en el período</CardDescription>
+                <CardTitle>Conversions by Type</CardTitle>
+                <CardDescription>Goals reached in the period</CardDescription>
               </CardHeader>
               <CardContent>
                 {conversionsData?.conversions.length > 0 ? (
@@ -599,16 +620,16 @@ export default function AnalyticsEnhancedPage() {
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Bar dataKey="count" fill="#0088FE" name="Cantidad" />
+                        <Bar dataKey="count" fill="#0088FE" name="Count" />
                       </BarChart>
                     </ResponsiveContainer>
 
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Tipo</TableHead>
-                          <TableHead>Cantidad</TableHead>
-                          <TableHead>Valor Total</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Count</TableHead>
+                          <TableHead>Total Value</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -633,7 +654,7 @@ export default function AnalyticsEnhancedPage() {
                 ) : (
                   <div className="text-center py-12 text-gray-500">
                     <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No hay conversiones registradas en este período</p>
+                    <p>No conversions registered in this period</p>
                   </div>
                 )}
               </CardContent>
@@ -645,7 +666,20 @@ export default function AnalyticsEnhancedPage() {
   );
 }
 
-// Componente de tarjeta de métrica con comparación
+/**
+ * A component that displays a metric card with comparison.
+ * @param {object} props - The props for the component.
+ * @param {string} props.title - The title of the metric.
+ * @param {React.ReactNode} props.icon - The icon for the metric.
+ * @param {number | string} props.value - The value of the metric.
+ * @param {number | string} [props.previous] - The previous value of the metric.
+ * @param {boolean} props.compareEnabled - Whether to show the comparison.
+ * @param {string} [props.subtitle] - The subtitle of the metric.
+ * @param {string} [props.valueColor] - The color of the value.
+ * @param {boolean} [props.isTime] - Whether the value is a time.
+ * @param {boolean} [props.isPercent] - Whether the value is a percentage.
+ * @returns {JSX.Element} The rendered metric card.
+ */
 function MetricCard({
   title,
   icon,
@@ -696,7 +730,7 @@ function MetricCard({
             <span className={`text-sm font-medium ${change > 0 ? "text-green-600" : "text-red-600"}`}>
               {Math.abs(change).toFixed(1)}%
             </span>
-            <span className="text-xs text-gray-500 ml-1">vs período anterior</span>
+            <span className="text-xs text-gray-500 ml-1">vs previous period</span>
           </div>
         )}
         {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}

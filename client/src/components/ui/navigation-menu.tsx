@@ -5,6 +5,18 @@ import { ChevronDown } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * @typedef NavigationMenuProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the navigation menu.
+ */
+
+/**
+ * A component that displays a navigation menu.
+ * @param {NavigationMenuProps & React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Root>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof NavigationMenuPrimitive.Root>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered navigation menu.
+ */
 const NavigationMenu = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Root>
@@ -23,6 +35,17 @@ const NavigationMenu = React.forwardRef<
 ))
 NavigationMenu.displayName = NavigationMenuPrimitive.Root.displayName
 
+/**
+ * @typedef NavigationMenuListProps
+ * @property {string} [className] - Additional class names for styling.
+ */
+
+/**
+ * A component that displays a list of items in a navigation menu.
+ * @param {NavigationMenuListProps & React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.List>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof NavigationMenuPrimitive.List>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered navigation menu list.
+ */
 const NavigationMenuList = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.List>
@@ -44,6 +67,18 @@ const navigationMenuTriggerStyle = cva(
   "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=open]:text-accent-foreground data-[state=open]:bg-accent/50 data-[state=open]:hover:bg-accent data-[state=open]:focus:bg-accent"
 )
 
+/**
+ * @typedef NavigationMenuTriggerProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the trigger.
+ */
+
+/**
+ * A component that triggers a navigation menu.
+ * @param {NavigationMenuTriggerProps & React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Trigger>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof NavigationMenuPrimitive.Trigger>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered navigation menu trigger.
+ */
 const NavigationMenuTrigger = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Trigger>
@@ -62,6 +97,17 @@ const NavigationMenuTrigger = React.forwardRef<
 ))
 NavigationMenuTrigger.displayName = NavigationMenuPrimitive.Trigger.displayName
 
+/**
+ * @typedef NavigationMenuContentProps
+ * @property {string} [className] - Additional class names for styling.
+ */
+
+/**
+ * A component that contains the content of a navigation menu.
+ * @param {NavigationMenuContentProps & React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Content>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof NavigationMenuPrimitive.Content>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered navigation menu content.
+ */
 const NavigationMenuContent = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Content>
@@ -79,6 +125,17 @@ NavigationMenuContent.displayName = NavigationMenuPrimitive.Content.displayName
 
 const NavigationMenuLink = NavigationMenuPrimitive.Link
 
+/**
+ * @typedef NavigationMenuViewportProps
+ * @property {string} [className] - Additional class names for styling.
+ */
+
+/**
+ * A component that displays the viewport of a navigation menu.
+ * @param {NavigationMenuViewportProps & React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Viewport>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof NavigationMenuPrimitive.Viewport>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered navigation menu viewport.
+ */
 const NavigationMenuViewport = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Viewport>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Viewport>
@@ -97,6 +154,17 @@ const NavigationMenuViewport = React.forwardRef<
 NavigationMenuViewport.displayName =
   NavigationMenuPrimitive.Viewport.displayName
 
+/**
+ * @typedef NavigationMenuIndicatorProps
+ * @property {string} [className] - Additional class names for styling.
+ */
+
+/**
+ * A component that displays an indicator for the active item in a navigation menu.
+ * @param {NavigationMenuIndicatorProps & React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Indicator>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof NavigationMenuPrimitive.Indicator>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered navigation menu indicator.
+ */
 const NavigationMenuIndicator = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Indicator>,
   React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Indicator>

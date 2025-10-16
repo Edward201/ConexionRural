@@ -6,6 +6,18 @@ import { Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 
+/**
+ * @typedef CommandProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the command.
+ */
+
+/**
+ * A component that displays a command menu.
+ * @param {CommandProps & React.ComponentPropsWithoutRef<typeof CommandPrimitive>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof CommandPrimitive>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered command menu.
+ */
 const Command = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive>
@@ -21,6 +33,16 @@ const Command = React.forwardRef<
 ))
 Command.displayName = CommandPrimitive.displayName
 
+/**
+ * @typedef CommandDialogProps
+ * @property {React.ReactNode} children - The content of the command dialog.
+ */
+
+/**
+ * A component that displays a command menu in a dialog.
+ * @param {CommandDialogProps & DialogProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered command dialog.
+ */
 const CommandDialog = ({ children, ...props }: DialogProps) => {
   return (
     <Dialog {...props}>
@@ -33,6 +55,17 @@ const CommandDialog = ({ children, ...props }: DialogProps) => {
   )
 }
 
+/**
+ * @typedef CommandInputProps
+ * @property {string} [className] - Additional class names for styling.
+ */
+
+/**
+ * A component that displays an input for a command menu.
+ * @param {CommandInputProps & React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof CommandPrimitive.Input>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered command input.
+ */
 const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
@@ -52,6 +85,18 @@ const CommandInput = React.forwardRef<
 
 CommandInput.displayName = CommandPrimitive.Input.displayName
 
+/**
+ * @typedef CommandListProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the command list.
+ */
+
+/**
+ * A component that displays a list of commands.
+ * @param {CommandListProps & React.ComponentPropsWithoutRef<typeof CommandPrimitive.List>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof CommandPrimitive.List>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered command list.
+ */
 const CommandList = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.List>
@@ -65,6 +110,12 @@ const CommandList = React.forwardRef<
 
 CommandList.displayName = CommandPrimitive.List.displayName
 
+/**
+ * A component that displays a message when there are no commands to show.
+ * @param {React.ComponentPropsWithoutRef<typeof CommandPrimitive.Empty>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof CommandPrimitive.Empty>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered empty command message.
+ */
 const CommandEmpty = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Empty>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Empty>
@@ -78,6 +129,18 @@ const CommandEmpty = React.forwardRef<
 
 CommandEmpty.displayName = CommandPrimitive.Empty.displayName
 
+/**
+ * @typedef CommandGroupProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the command group.
+ */
+
+/**
+ * A component that groups commands.
+ * @param {CommandGroupProps & React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof CommandPrimitive.Group>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered command group.
+ */
 const CommandGroup = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Group>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group>
@@ -94,6 +157,17 @@ const CommandGroup = React.forwardRef<
 
 CommandGroup.displayName = CommandPrimitive.Group.displayName
 
+/**
+ * @typedef CommandSeparatorProps
+ * @property {string} [className] - Additional class names for styling.
+ */
+
+/**
+ * A component that displays a separator between command groups.
+ * @param {CommandSeparatorProps & React.ComponentPropsWithoutRef<typeof CommandPrimitive.Separator>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof CommandPrimitive.Separator>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered command separator.
+ */
 const CommandSeparator = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Separator>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Separator>
@@ -106,6 +180,18 @@ const CommandSeparator = React.forwardRef<
 ))
 CommandSeparator.displayName = CommandPrimitive.Separator.displayName
 
+/**
+ * @typedef CommandItemProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the command item.
+ */
+
+/**
+ * A component that displays a single command item.
+ * @param {CommandItemProps & React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof CommandPrimitive.Item>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered command item.
+ */
 const CommandItem = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
@@ -122,6 +208,17 @@ const CommandItem = React.forwardRef<
 
 CommandItem.displayName = CommandPrimitive.Item.displayName
 
+/**
+ * @typedef CommandShortcutProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the command shortcut.
+ */
+
+/**
+ * A component that displays a shortcut for a command.
+ * @param {CommandShortcutProps & React.HTMLAttributes<HTMLSpanElement>} props - The props for the component.
+ * @returns {JSX.Element} The rendered command shortcut.
+ */
 const CommandShortcut = ({
   className,
   ...props

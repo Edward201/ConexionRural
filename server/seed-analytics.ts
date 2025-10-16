@@ -1,6 +1,6 @@
 /**
- * Script para generar datos de demo para analytics
- * Uso: tsx server/seed-analytics.ts
+ * Script to generate demo data for analytics
+ * Usage: tsx server/seed-analytics.ts
  */
 
 import "dotenv/config";
@@ -13,40 +13,58 @@ const devices = ["desktop", "mobile", "tablet"];
 const browsers = ["Chrome", "Firefox", "Safari", "Edge"];
 const oss = ["Windows", "Mac OS", "Android", "iOS", "Linux"];
 const pages = [
-  { url: "/", title: "Inicio" },
-  { url: "/about", title: "Acerca de" },
-  { url: "/services", title: "Servicios" },
-  { url: "/contact", title: "Contacto" },
+  { url: "/", title: "Home" },
+  { url: "/about", title: "About" },
+  { url: "/services", title: "Services" },
+  { url: "/contact", title: "Contact" },
   { url: "/blog", title: "Blog" },
-  { url: "/products", title: "Productos" },
+  { url: "/products", title: "Products" },
 ];
 const conversionTypes = ["registration", "subscription", "contact", "download"];
 
+/**
+ * Returns a random item from an array.
+ * @param {T[]} array - The array to get a random item from.
+ * @returns {T} A random item from the array.
+ */
 function randomItem<T>(array: T[]): T {
   return array[Math.floor(Math.random() * array.length)];
 }
 
+/**
+ * Returns a random integer between two values.
+ * @param {number} min - The minimum value.
+ * @param {number} max - The maximum value.
+ * @returns {number} A random integer between the two values.
+ */
 function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+/**
+ * Generates a random session ID.
+ * @returns {string} A random session ID.
+ */
 function generateSessionId(): string {
   return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
+/**
+ * Seeds the database with analytics data.
+ */
 async function seedAnalytics() {
-  console.log("🌱 Generando datos de demo para analytics...");
+  console.log("🌱 Generating demo data for analytics...");
 
   try {
     const events = [];
     const now = new Date();
 
-    // Generar eventos de los últimos 30 días
+    // Generate events for the last 30 days
     for (let day = 30; day >= 0; day--) {
       const date = new Date(now);
       date.setDate(date.getDate() - day);
 
-      // Generar entre 20 y 100 eventos por día
+      // Generate between 20 and 100 events per day
       const eventsPerDay = randomInt(20, 100);
 
       for (let i = 0; i < eventsPerDay; i++) {
@@ -57,9 +75,9 @@ async function seedAnalytics() {
         const source = randomItem(sources);
         const medium = source === "direct" ? null : randomItem(mediums);
         const deviceType = randomItem(devices);
-        const isNewUser = Math.random() > 0.6; // 40% usuarios recurrentes
-        const bounced = Math.random() > 0.65; // 35% tasa de rebote
-        const converted = !bounced && Math.random() > 0.92; // ~8% tasa de conversión
+        const isNewUser = Math.random() > 0.6; // 40% returning users
+        const bounced = Math.random() > 0.65; // 35% bounce rate
+        const converted = !bounced && Math.random() > 0.92; // ~8% conversion rate
 
         events.push({
           pageUrl: page.url,
@@ -86,25 +104,25 @@ async function seedAnalytics() {
       }
     }
 
-    // Insertar en batch
-    console.log(`📊 Insertando ${events.length} eventos de analytics...`);
+    // Batch insert
+    console.log(`📊 Inserting ${events.length} analytics events...`);
     
     for (let i = 0; i < events.length; i += 100) {
       const batch = events.slice(i, i + 100);
       await db.insert(analytics).values(batch);
-      console.log(`   Insertados ${Math.min(i + 100, events.length)}/${events.length} eventos`);
+      console.log(`   Inserted ${Math.min(i + 100, events.length)}/${events.length} events`);
     }
 
-    console.log("\n✅ Datos de demo generados exitosamente");
-    console.log(`   Total eventos: ${events.length}`);
-    console.log(`   Período: últimos 30 días`);
-    console.log(`   Páginas: ${pages.length}`);
-    console.log(`   Fuentes: ${sources.length}`);
-    console.log("\n🎉 Ahora puedes ver los datos en /analytics");
+    console.log("\n✅ Demo data generated successfully");
+    console.log(`   Total events: ${events.length}`);
+    console.log(`   Period: last 30 days`);
+    console.log(`   Pages: ${pages.length}`);
+    console.log(`   Sources: ${sources.length}`);
+    console.log("\n🎉 Now you can see the data in /analytics");
 
     process.exit(0);
   } catch (error: any) {
-    console.error("❌ Error al generar datos:", error.message);
+    console.error("❌ Error generating data:", error.message);
     process.exit(1);
   }
 }

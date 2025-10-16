@@ -2,23 +2,23 @@ import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Tabla de usuarios con roles
+// Users table with roles
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
-  role: text("role").notNull().default("user"), // 'admin' o 'user'
+  role: text("role").notNull().default("user"), // 'admin' or 'user'
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-// Schema para insertar usuario (registro)
+// Schema for inserting a user (registration)
 export const insertUserSchema = createInsertSchema(users, {
-  username: z.string().min(3, "El usuario debe tener al menos 3 caracteres").max(50),
-  email: z.string().email("Email inválido"),
-  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+  username: z.string().min(3, "Username must be at least 3 characters long").max(50),
+  email: z.string().email("Invalid email"),
+  password: z.string().min(6, "Password must be at least 6 characters long"),
   role: z.enum(["admin", "user"]).optional(),
 }).pick({
   username: true,
@@ -27,13 +27,13 @@ export const insertUserSchema = createInsertSchema(users, {
   role: true,
 });
 
-// Schema para login
+// Schema for login
 export const loginSchema = z.object({
-  username: z.string().min(1, "Usuario requerido"),
-  password: z.string().min(1, "Contraseña requerida"),
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
 });
 
-// Schema para seleccionar usuario (sin password)
+// Schema for selecting a user (without password)
 export const selectUserSchema = createSelectSchema(users).omit({
   password: true,
 });
@@ -43,34 +43,34 @@ export type User = typeof users.$inferSelect;
 export type SafeUser = Omit<User, "password">;
 export type LoginCredentials = z.infer<typeof loginSchema>;
 
-// Tabla de métricas de analytics
+// Analytics metrics table
 export const analytics = pgTable("analytics", {
   id: serial("id").primaryKey(),
-  // Datos de la visita
+  // Visit data
   pageUrl: text("page_url").notNull(),
   pageTitle: text("page_title"),
   referrer: text("referrer"),
-  // Fuente de tráfico
+  // Traffic source
   source: text("source").notNull(), // organic, social, direct, referral
   medium: text("medium"), // google, facebook, twitter, etc.
   campaign: text("campaign"),
-  // Datos del usuario
+  // User data
   userId: integer("user_id").references(() => users.id),
   sessionId: text("session_id").notNull(),
   isNewUser: boolean("is_new_user").notNull().default(true),
-  // Datos del dispositivo
+  // Device data
   deviceType: text("device_type").notNull(), // mobile, desktop, tablet
   browser: text("browser"),
   os: text("os"),
   screenResolution: text("screen_resolution"),
-  // Datos de la sesión
-  timeOnPage: integer("time_on_page").default(0), // segundos
+  // Session data
+  timeOnPage: integer("time_on_page").default(0), // seconds
   bounced: boolean("bounced").default(false),
-  // Conversiones
+  // Conversions
   converted: boolean("converted").default(false),
   conversionType: text("conversion_type"), // registration, subscription, contact, etc.
-  conversionValue: integer("conversion_value"), // valor monetario opcional
-  // Geolocalización
+  conversionValue: integer("conversion_value"), // optional monetary value
+  // Geolocation
   country: text("country"),
   city: text("city"),
   // Timestamps
@@ -85,14 +85,14 @@ export const insertAnalyticsSchema = createInsertSchema(analytics).omit({
 export type InsertAnalytics = z.infer<typeof insertAnalyticsSchema>;
 export type Analytics = typeof analytics.$inferSelect;
 
-// Tabla de contenido de la página principal (CMS)
+// Main page content table (CMS)
 export const pageContent = pgTable("page_content", {
   id: serial("id").primaryKey(),
   section: text("section").notNull().unique(), // hero, about, services, features, etc.
   title: text("title"),
   subtitle: text("subtitle"),
   description: text("description"),
-  content: text("content"), // JSON o texto largo
+  content: text("content"), // JSON or long text
   imageUrl: text("image_url"),
   buttonText: text("button_text"),
   buttonLink: text("button_link"),
@@ -103,7 +103,7 @@ export const pageContent = pgTable("page_content", {
 });
 
 export const insertPageContentSchema = createInsertSchema(pageContent, {
-  section: z.string().min(1, "La sección es requerida"),
+  section: z.string().min(1, "Section is required"),
   title: z.string().optional(),
   subtitle: z.string().optional(),
   description: z.string().optional(),

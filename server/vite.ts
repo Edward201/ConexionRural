@@ -12,6 +12,11 @@ const __dirname = path.dirname(__filename);
 
 const viteLogger = createLogger();
 
+/**
+ * Logs a message to the console.
+ * @param {string} message - The message to log.
+ * @param {string} [source="express"] - The source of the message.
+ */
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -23,6 +28,11 @@ export function log(message: string, source = "express") {
   console.log(`${formattedTime} [${source}] ${message}`);
 }
 
+/**
+ * Sets up the Vite server.
+ * @param {Express} app - The Express application.
+ * @param {Server} server - The HTTP server.
+ */
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
     middlewareMode: true,
@@ -71,6 +81,10 @@ export async function setupVite(app: Express, server: Server) {
   });
 }
 
+/**
+ * Serves static files.
+ * @param {Express} app - The Express application.
+ */
 export function serveStatic(app: Express) {
   const distPath = path.resolve(__dirname, "public");
 

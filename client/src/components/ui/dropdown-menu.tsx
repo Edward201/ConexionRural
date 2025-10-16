@@ -16,6 +16,19 @@ const DropdownMenuSub = DropdownMenuPrimitive.Sub
 
 const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup
 
+/**
+ * @typedef DropdownMenuSubTriggerProps
+ * @property {boolean} [inset] - Whether the sub trigger is inset.
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the sub trigger.
+ */
+
+/**
+ * A component that opens a submenu in a dropdown menu.
+ * @param {DropdownMenuSubTriggerProps & React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof DropdownMenuPrimitive.SubTrigger>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered dropdown menu sub trigger.
+ */
 const DropdownMenuSubTrigger = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubTrigger>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger> & {
@@ -38,6 +51,18 @@ const DropdownMenuSubTrigger = React.forwardRef<
 DropdownMenuSubTrigger.displayName =
   DropdownMenuPrimitive.SubTrigger.displayName
 
+/**
+ * @typedef DropdownMenuSubContentProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the sub content.
+ */
+
+/**
+ * A component that contains the content of a submenu in a dropdown menu.
+ * @param {DropdownMenuSubContentProps & React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof DropdownMenuPrimitive.SubContent>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered dropdown menu sub content.
+ */
 const DropdownMenuSubContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>
@@ -54,6 +79,19 @@ const DropdownMenuSubContent = React.forwardRef<
 DropdownMenuSubContent.displayName =
   DropdownMenuPrimitive.SubContent.displayName
 
+/**
+ * @typedef DropdownMenuContentProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {number} [sideOffset] - The offset of the content from the trigger.
+ * @property {React.ReactNode} children - The content of the dropdown menu.
+ */
+
+/**
+ * A component that contains the content of a dropdown menu.
+ * @param {DropdownMenuContentProps & React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof DropdownMenuPrimitive.Content>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered dropdown menu content.
+ */
 const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
@@ -72,6 +110,19 @@ const DropdownMenuContent = React.forwardRef<
 ))
 DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName
 
+/**
+ * @typedef DropdownMenuItemProps
+ * @property {boolean} [inset] - Whether the item is inset.
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the item.
+ */
+
+/**
+ * A component that represents a single item in a dropdown menu.
+ * @param {DropdownMenuItemProps & React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof DropdownMenuPrimitive.Item>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered dropdown menu item.
+ */
 const DropdownMenuItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & {
@@ -90,6 +141,19 @@ const DropdownMenuItem = React.forwardRef<
 ))
 DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName
 
+/**
+ * @typedef DropdownMenuCheckboxItemProps
+ * @property {boolean} [checked] - Whether the checkbox item is checked.
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the checkbox item.
+ */
+
+/**
+ * A component that represents a checkbox item in a dropdown menu.
+ * @param {DropdownMenuCheckboxItemProps & React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof DropdownMenuPrimitive.CheckboxItem>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered dropdown menu checkbox item.
+ */
 const DropdownMenuCheckboxItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.CheckboxItem>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem>
@@ -114,6 +178,18 @@ const DropdownMenuCheckboxItem = React.forwardRef<
 DropdownMenuCheckboxItem.displayName =
   DropdownMenuPrimitive.CheckboxItem.displayName
 
+/**
+ * @typedef DropdownMenuRadioItemProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the radio item.
+ */
+
+/**
+ * A component that represents a radio item in a dropdown menu.
+ * @param {DropdownMenuRadioItemProps & React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof DropdownMenuPrimitive.RadioItem>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered dropdown menu radio item.
+ */
 const DropdownMenuRadioItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.RadioItem>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem>
@@ -136,6 +212,19 @@ const DropdownMenuRadioItem = React.forwardRef<
 ))
 DropdownMenuRadioItem.displayName = DropdownMenuPrimitive.RadioItem.displayName
 
+/**
+ * @typedef DropdownMenuLabelProps
+ * @property {boolean} [inset] - Whether the label is inset.
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the label.
+ */
+
+/**
+ * A component that displays a label in a dropdown menu.
+ * @param {DropdownMenuLabelProps & React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof DropdownMenuPrimitive.Label>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered dropdown menu label.
+ */
 const DropdownMenuLabel = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Label>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label> & {
@@ -154,6 +243,17 @@ const DropdownMenuLabel = React.forwardRef<
 ))
 DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName
 
+/**
+ * @typedef DropdownMenuSeparatorProps
+ * @property {string} [className] - Additional class names for styling.
+ */
+
+/**
+ * A component that displays a separator in a dropdown menu.
+ * @param {DropdownMenuSeparatorProps & React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof DropdownMenuPrimitive.Separator>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered dropdown menu separator.
+ */
 const DropdownMenuSeparator = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Separator>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>
@@ -166,6 +266,17 @@ const DropdownMenuSeparator = React.forwardRef<
 ))
 DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName
 
+/**
+ * @typedef DropdownMenuShortcutProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the shortcut.
+ */
+
+/**
+ * A component that displays a shortcut in a dropdown menu.
+ * @param {DropdownMenuShortcutProps & React.HTMLAttributes<HTMLSpanElement>} props - The props for the component.
+ * @returns {JSX.Element} The rendered dropdown menu shortcut.
+ */
 const DropdownMenuShortcut = ({
   className,
   ...props

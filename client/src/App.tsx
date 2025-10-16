@@ -12,8 +12,12 @@ import AnalyticsEnhancedPage from "@/pages/analytics-enhanced";
 import ContentManagementPage from "@/pages/content-management";
 import NotFound from "@/pages/not-found";
 
+/**
+ * The main router for the application.
+ * @returns {JSX.Element} The rendered router.
+ */
 function Router() {
-  // Hook de analytics - trackea automáticamente cada cambio de página
+  // Analytics hook - automatically tracks each page change
   useAnalytics();
 
   return (
@@ -29,6 +33,10 @@ function Router() {
   );
 }
 
+/**
+ * The main application component.
+ * @returns {JSX.Element} The rendered application.
+ */
 function App() {
   return (
     <QueryClientProvider client={queryClient}>

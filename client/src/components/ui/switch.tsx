@@ -3,6 +3,19 @@ import * as SwitchPrimitives from "@radix-ui/react-switch"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * @typedef SwitchProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {boolean} [checked] - Whether the switch is checked.
+ * @property {function} [onCheckedChange] - A callback function that is called when the switch is checked or unchecked.
+ */
+
+/**
+ * A component that allows the user to toggle between two states.
+ * @param {SwitchProps & React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof SwitchPrimitives.Root>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered switch.
+ */
 const Switch = React.forwardRef<
   React.ElementRef<typeof SwitchPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>

@@ -4,11 +4,11 @@ import * as schema from "@shared/schema";
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
-    "DATABASE_URL no está definido. Crea un archivo .env con tu conexión a PostgreSQL"
+    "DATABASE_URL is not defined. Create a .env file with your PostgreSQL connection"
   );
 }
 
-// Cliente PostgreSQL local
+// Local PostgreSQL client
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
 });

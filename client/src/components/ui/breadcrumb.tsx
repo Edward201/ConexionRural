@@ -4,6 +4,19 @@ import { ChevronRight, MoreHorizontal } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * @typedef BreadcrumbProps
+ * @property {React.ReactNode} [separator] - The separator to use between breadcrumb items.
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the breadcrumb.
+ */
+
+/**
+ * A component that displays a breadcrumb navigation.
+ * @param {BreadcrumbProps} props - The props for the component.
+ * @param {React.Ref<HTMLElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered breadcrumb.
+ */
 const Breadcrumb = React.forwardRef<
   HTMLElement,
   React.ComponentPropsWithoutRef<"nav"> & {
@@ -12,6 +25,18 @@ const Breadcrumb = React.forwardRef<
 >(({ ...props }, ref) => <nav ref={ref} aria-label="breadcrumb" {...props} />)
 Breadcrumb.displayName = "Breadcrumb"
 
+/**
+ * @typedef BreadcrumbListProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the breadcrumb list.
+ */
+
+/**
+ * A component that displays a list of breadcrumb items.
+ * @param {BreadcrumbListProps} props - The props for the component.
+ * @param {React.Ref<HTMLOListElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered breadcrumb list.
+ */
 const BreadcrumbList = React.forwardRef<
   HTMLOListElement,
   React.ComponentPropsWithoutRef<"ol">
@@ -27,6 +52,18 @@ const BreadcrumbList = React.forwardRef<
 ))
 BreadcrumbList.displayName = "BreadcrumbList"
 
+/**
+ * @typedef BreadcrumbItemProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the breadcrumb item.
+ */
+
+/**
+ * A component that displays a single breadcrumb item.
+ * @param {BreadcrumbItemProps} props - The props for the component.
+ * @param {React.Ref<HTMLLIElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered breadcrumb item.
+ */
 const BreadcrumbItem = React.forwardRef<
   HTMLLIElement,
   React.ComponentPropsWithoutRef<"li">
@@ -39,6 +76,19 @@ const BreadcrumbItem = React.forwardRef<
 ))
 BreadcrumbItem.displayName = "BreadcrumbItem"
 
+/**
+ * @typedef BreadcrumbLinkProps
+ * @property {boolean} [asChild] - Whether to render the link as a child component.
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the breadcrumb link.
+ */
+
+/**
+ * A component that displays a link in a breadcrumb item.
+ * @param {BreadcrumbLinkProps} props - The props for the component.
+ * @param {React.Ref<HTMLAnchorElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered breadcrumb link.
+ */
 const BreadcrumbLink = React.forwardRef<
   HTMLAnchorElement,
   React.ComponentPropsWithoutRef<"a"> & {
@@ -57,6 +107,18 @@ const BreadcrumbLink = React.forwardRef<
 })
 BreadcrumbLink.displayName = "BreadcrumbLink"
 
+/**
+ * @typedef BreadcrumbPageProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the breadcrumb page.
+ */
+
+/**
+ * A component that displays the current page in a breadcrumb item.
+ * @param {BreadcrumbPageProps} props - The props for the component.
+ * @param {React.Ref<HTMLSpanElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered breadcrumb page.
+ */
 const BreadcrumbPage = React.forwardRef<
   HTMLSpanElement,
   React.ComponentPropsWithoutRef<"span">
@@ -72,6 +134,17 @@ const BreadcrumbPage = React.forwardRef<
 ))
 BreadcrumbPage.displayName = "BreadcrumbPage"
 
+/**
+ * @typedef BreadcrumbSeparatorProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the breadcrumb separator.
+ */
+
+/**
+ * A component that displays a separator between breadcrumb items.
+ * @param {BreadcrumbSeparatorProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered breadcrumb separator.
+ */
 const BreadcrumbSeparator = ({
   children,
   className,
@@ -88,6 +161,16 @@ const BreadcrumbSeparator = ({
 )
 BreadcrumbSeparator.displayName = "BreadcrumbSeparator"
 
+/**
+ * @typedef BreadcrumbEllipsisProps
+ * @property {string} [className] - Additional class names for styling.
+ */
+
+/**
+ * A component that displays an ellipsis in a breadcrumb item.
+ * @param {BreadcrumbEllipsisProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered breadcrumb ellipsis.
+ */
 const BreadcrumbEllipsis = ({
   className,
   ...props

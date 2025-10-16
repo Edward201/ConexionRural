@@ -7,6 +7,20 @@ const Popover = PopoverPrimitive.Root
 
 const PopoverTrigger = PopoverPrimitive.Trigger
 
+/**
+ * @typedef PopoverContentProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {"center" | "start" | "end"} [align] - The alignment of the content.
+ * @property {number} [sideOffset] - The offset of the content from the trigger.
+ * @property {React.ReactNode} children - The content of the popover.
+ */
+
+/**
+ * A component that displays a popover.
+ * @param {PopoverContentProps & React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof PopoverPrimitive.Content>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered popover content.
+ */
 const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>

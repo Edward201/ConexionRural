@@ -1,5 +1,9 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
+/**
+ * Throws an error if the response is not ok.
+ * @param {Response} res - The response to check.
+ */
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
@@ -7,6 +11,13 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+/**
+ * Makes an API request.
+ * @param {string} method - The HTTP method to use.
+ * @param {string} url - The URL to request.
+ * @param {unknown} [data] - The data to send with the request.
+ * @returns {Promise<Response>} The response from the API.
+ */
 export async function apiRequest(
   method: string,
   url: string,
@@ -24,6 +35,11 @@ export async function apiRequest(
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
+/**
+ * Gets a query function for react-query.
+ * @param {{on401: UnauthorizedBehavior}} options - The options for the query function.
+ * @returns {QueryFunction<T>} The query function.
+ */
 export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
 }) => QueryFunction<T> =

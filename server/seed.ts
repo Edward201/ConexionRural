@@ -1,55 +1,58 @@
 /**
- * Script de inicialización de base de datos
- * Crea un usuario administrador por defecto
+ * Database initialization script
+ * Creates a default administrator user
  * 
- * Uso: tsx server/seed.ts
+ * Usage: tsx server/seed.ts
  */
 
 import "dotenv/config";
 import { storage } from "./storage";
 
+/**
+ * Seeds the database with a default administrator user.
+ */
 async function seed() {
-  console.log("🌱 Iniciando seed de la base de datos...");
+  console.log("🌱 Initializing database seed...");
 
   try {
-    // Verificar si ya existe un admin
+    // Check if an admin user already exists
     const existingAdmin = await storage.getUserByUsername("admin");
 
     if (existingAdmin) {
-      console.log("✅ Usuario admin ya existe. No se requiere seed.");
+      console.log("✅ Admin user already exists. No seed required.");
       return;
     }
 
-    // Crear usuario administrador por defecto
+    // Create a default administrator user
     const adminUser = await storage.createUser({
       username: "admin",
       email: "admin@conexionrural.com",
-      password: "admin123", // CAMBIAR EN PRODUCCIÓN
+      password: "admin123", // CHANGE IN PRODUCTION
       role: "admin",
     });
 
-    console.log("✅ Usuario administrador creado exitosamente:");
-    console.log("   Usuario: admin");
+    console.log("✅ Administrator user created successfully:");
+    console.log("   User: admin");
     console.log("   Email: admin@conexionrural.com");
-    console.log("   Contraseña: admin123");
-    console.log("   ⚠️  IMPORTANTE: Cambia esta contraseña después del primer login");
+    console.log("   Password: admin123");
+    console.log("   ⚠️  IMPORTANT: Change this password after the first login");
 
-    // Crear un usuario de prueba
+    // Create a test user
     const testUser = await storage.createUser({
-      username: "usuario_prueba",
-      email: "usuario@test.com",
+      username: "test_user",
+      email: "user@test.com",
       password: "test123",
       role: "user",
     });
 
-    console.log("\n✅ Usuario de prueba creado:");
-    console.log("   Usuario: usuario_prueba");
-    console.log("   Email: usuario@test.com");
-    console.log("   Contraseña: test123");
+    console.log("\n✅ Test user created:");
+    console.log("   User: test_user");
+    console.log("   Email: user@test.com");
+    console.log("   Password: test123");
 
-    console.log("\n🎉 Seed completado exitosamente");
+    console.log("\n🎉 Seed completed successfully");
   } catch (error: any) {
-    console.error("❌ Error al ejecutar seed:", error.message);
+    console.error("❌ Error executing seed:", error.message);
     process.exit(1);
   }
 }

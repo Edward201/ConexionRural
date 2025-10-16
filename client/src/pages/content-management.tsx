@@ -14,6 +14,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Edit, Trash2, Plus, Eye, EyeOff, Save, X } from "lucide-react";
 import type { PageContent } from "@shared/schema";
 
+/**
+ * A page for managing content.
+ * @returns {JSX.Element} The rendered content management page.
+ */
 export default function ContentManagementPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -24,7 +28,7 @@ export default function ContentManagementPage() {
   const [selectedContent, setSelectedContent] = useState<PageContent | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
-  // Formulario
+  // Form
   const [formData, setFormData] = useState({
     section: "",
     title: "",
@@ -38,7 +42,7 @@ export default function ContentManagementPage() {
     order: 0,
   });
 
-  // Verificar autenticación
+  // Verify authentication
   const { data: authData, isLoading: authLoading } = useQuery({
     queryKey: ["auth"],
     queryFn: async () => {
@@ -46,7 +50,7 @@ export default function ContentManagementPage() {
         credentials: "include",
       });
 
-      if (!response.ok) throw new Error("No autenticado");
+      if (!response.ok) throw new Error("Not authenticated");
       return response.json();
     },
     retry: false,
@@ -60,28 +64,28 @@ export default function ContentManagementPage() {
       if (authData.user.role !== "admin") {
         toast({
           variant: "destructive",
-          title: "Acceso denegado",
-          description: "Solo administradores pueden gestionar contenido",
+          title: "Access denied",
+          description: "Only administrators can manage content",
         });
         setLocation("/");
       }
     }
   }, [authData, authLoading, setLocation]);
 
-  // Obtener contenido
+  // Get content
   const { data: contentData, isLoading: contentLoading } = useQuery({
     queryKey: ["cms-content"],
     queryFn: async () => {
       const response = await fetch("/api/cms/content", {
         credentials: "include",
       });
-      if (!response.ok) throw new Error("Error al obtener contenido");
+      if (!response.ok) throw new Error("Error getting content");
       return response.json();
     },
     enabled: !!authData,
   });
 
-  // Crear/Actualizar contenido
+  // Create/Update content
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       const url = isCreating
@@ -98,7 +102,7 @@ export default function ContentManagementPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Error al guardar contenido");
+        throw new Error(error.message || "Error saving content");
       }
 
       return response.json();
@@ -106,8 +110,8 @@ export default function ContentManagementPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cms-content"] });
       toast({
-        title: isCreating ? "Contenido creado" : "Contenido actualizado",
-        description: "Los cambios se guardaron correctamente",
+        title: isCreating ? "Content created" : "Content updated",
+        description: "The changes were saved correctly",
       });
       setEditDialogOpen(false);
       resetForm();
@@ -121,7 +125,7 @@ export default function ContentManagementPage() {
     },
   });
 
-  // Eliminar contenido
+  // Delete content
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
       const response = await fetch(`/api/cms/content/${id}`, {
@@ -129,14 +133,14 @@ export default function ContentManagementPage() {
         credentials: "include",
       });
 
-      if (!response.ok) throw new Error("Error al eliminar contenido");
+      if (!response.ok) throw new Error("Error deleting content");
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cms-content"] });
       toast({
-        title: "Contenido eliminado",
-        description: "El contenido se eliminó correctamente",
+        title: "Content deleted",
+        description: "The content was deleted successfully",
       });
       setDeleteDialogOpen(false);
       setSelectedContent(null);
@@ -150,6 +154,9 @@ export default function ContentManagementPage() {
     },
   });
 
+  /**
+   * Resets the form data.
+   */
   const resetForm = () => {
     setFormData({
       section: "",
@@ -167,6 +174,10 @@ export default function ContentManagementPage() {
     setIsCreating(false);
   };
 
+  /**
+   * Handles editing a content item.
+   * @param {PageContent} content - The content item to edit.
+   */
   const handleEdit = (content: PageContent) => {
     setSelectedContent(content);
     setFormData({
@@ -185,21 +196,34 @@ export default function ContentManagementPage() {
     setEditDialogOpen(true);
   };
 
+  /**
+   * Handles creating a new content item.
+   */
   const handleCreate = () => {
     resetForm();
     setIsCreating(true);
     setEditDialogOpen(true);
   };
 
+  /**
+   * Handles deleting a content item.
+   * @param {PageContent} content - The content item to delete.
+   */
   const handleDelete = (content: PageContent) => {
     setSelectedContent(content);
     setDeleteDialogOpen(true);
   };
 
+  /**
+   * Handles saving a content item.
+   */
   const handleSave = () => {
     saveMutation.mutate(formData);
   };
 
+  /**
+   * Confirms the deletion of a content item.
+   */
   const confirmDelete = () => {
     if (selectedContent) {
       deleteMutation.mutate(selectedContent.id);
@@ -209,7 +233,7 @@ export default function ContentManagementPage() {
   if (authLoading || !currentUser) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-lg">Cargando...</p>
+        <p className="text-lg">Loading...</p>
       </div>
     );
   }
@@ -222,39 +246,39 @@ export default function ContentManagementPage() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Gestión de Contenido</h1>
+            <h1 className="text-3xl font-bold">Content Management</h1>
             <p className="text-gray-600 mt-1">
-              Administra el contenido de la página principal
+              Manage the content of the main page
             </p>
           </div>
           <div className="flex gap-2">
             <Button onClick={handleCreate}>
               <Plus className="h-4 w-4 mr-2" />
-              Nueva Sección
+              New Section
             </Button>
             <Button variant="outline" onClick={() => setLocation("/dashboard")}>
-              Volver
+              Back
             </Button>
           </div>
         </div>
 
-        {/* Tabla de contenido */}
+        {/* Content table */}
         <Card>
           <CardHeader>
-            <CardTitle>Secciones de Contenido</CardTitle>
+            <CardTitle>Content Sections</CardTitle>
             <CardDescription>
-              Lista de todas las secciones de la página principal
+              List of all sections of the main page
             </CardDescription>
           </CardHeader>
           <CardContent>
             {contentLoading ? (
-              <p>Cargando contenido...</p>
+              <p>Loading content...</p>
             ) : contents.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
-                <p>No hay contenido creado aún</p>
+                <p>No content created yet</p>
                 <Button className="mt-4" onClick={handleCreate}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Crear Primera Sección
+                  Create First Section
                 </Button>
               </div>
             ) : (
@@ -262,12 +286,12 @@ export default function ContentManagementPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Orden</TableHead>
-                      <TableHead>Sección</TableHead>
-                      <TableHead>Título</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead>Actualizado</TableHead>
-                      <TableHead>Acciones</TableHead>
+                      <TableHead>Order</TableHead>
+                      <TableHead>Section</TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Updated</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -287,7 +311,7 @@ export default function ContentManagementPage() {
                           ) : (
                             <Badge variant="secondary" className="flex items-center gap-1 w-fit">
                               <EyeOff className="h-3 w-3" />
-                              Oculto
+                              Hidden
                             </Badge>
                           )}
                         </TableCell>
@@ -321,24 +345,24 @@ export default function ContentManagementPage() {
           </CardContent>
         </Card>
 
-        {/* Dialog de Edición/Creación */}
+        {/* Edit/Create Dialog */}
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {isCreating ? "Crear Nueva Sección" : "Editar Sección"}
+                {isCreating ? "Create New Section" : "Edit Section"}
               </DialogTitle>
               <DialogDescription>
                 {isCreating
-                  ? "Completa los campos para crear una nueva sección de contenido"
-                  : "Modifica los campos para actualizar la sección"}
+                  ? "Complete the fields to create a new content section"
+                  : "Modify the fields to update the section"}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="section">Sección *</Label>
+                  <Label htmlFor="section">Section *</Label>
                   <Input
                     id="section"
                     placeholder="hero, about, services, etc."
@@ -349,7 +373,7 @@ export default function ContentManagementPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="order">Orden</Label>
+                  <Label htmlFor="order">Order</Label>
                   <Input
                     id="order"
                     type="number"
@@ -360,30 +384,30 @@ export default function ContentManagementPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="title">Título</Label>
+                <Label htmlFor="title">Title</Label>
                 <Input
                   id="title"
-                  placeholder="Título principal de la sección"
+                  placeholder="Main title of the section"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="subtitle">Subtítulo</Label>
+                <Label htmlFor="subtitle">Subtitle</Label>
                 <Input
                   id="subtitle"
-                  placeholder="Subtítulo o texto secundario"
+                  placeholder="Subtitle or secondary text"
                   value={formData.subtitle}
                   onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Descripción</Label>
+                <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
-                  placeholder="Descripción corta de la sección"
+                  placeholder="Short description of the section"
                   rows={3}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -391,10 +415,10 @@ export default function ContentManagementPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="content">Contenido</Label>
+                <Label htmlFor="content">Content</Label>
                 <Textarea
                   id="content"
-                  placeholder="Contenido principal (texto largo, HTML, JSON, etc.)"
+                  placeholder="Main content (long text, HTML, JSON, etc.)"
                   rows={5}
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
@@ -402,10 +426,10 @@ export default function ContentManagementPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="imageUrl">URL de Imagen</Label>
+                <Label htmlFor="imageUrl">Image URL</Label>
                 <Input
                   id="imageUrl"
-                  placeholder="https://ejemplo.com/imagen.jpg"
+                  placeholder="https://example.com/image.jpg"
                   value={formData.imageUrl}
                   onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                 />
@@ -413,20 +437,20 @@ export default function ContentManagementPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="buttonText">Texto del Botón</Label>
+                  <Label htmlFor="buttonText">Button Text</Label>
                   <Input
                     id="buttonText"
-                    placeholder="Más información"
+                    placeholder="More information"
                     value={formData.buttonText}
                     onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="buttonLink">Enlace del Botón</Label>
+                  <Label htmlFor="buttonLink">Button Link</Label>
                   <Input
                     id="buttonLink"
-                    placeholder="/contacto"
+                    placeholder="/contact"
                     value={formData.buttonLink}
                     onChange={(e) => setFormData({ ...formData, buttonLink: e.target.value })}
                   />
@@ -440,7 +464,7 @@ export default function ContentManagementPage() {
                   onCheckedChange={(checked) => setFormData({ ...formData, isVisible: checked })}
                 />
                 <Label htmlFor="isVisible">
-                  Visible en la página principal
+                  Visible on the main page
                 </Label>
               </div>
             </div>
@@ -454,23 +478,23 @@ export default function ContentManagementPage() {
                 }}
               >
                 <X className="h-4 w-4 mr-2" />
-                Cancelar
+                Cancel
               </Button>
               <Button onClick={handleSave} disabled={saveMutation.isPending || !formData.section}>
                 <Save className="h-4 w-4 mr-2" />
-                {saveMutation.isPending ? "Guardando..." : "Guardar"}
+                {saveMutation.isPending ? "Saving..." : "Save"}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        {/* Dialog de Confirmación de Eliminación */}
+        {/* Delete Confirmation Dialog */}
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>¿Eliminar sección?</DialogTitle>
+              <DialogTitle>Delete section?</DialogTitle>
               <DialogDescription>
-                Esta acción no se puede deshacer. La sección "{selectedContent?.section}" será eliminada permanentemente.
+                This action cannot be undone. The section "{selectedContent?.section}" will be permanently deleted.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
@@ -481,14 +505,14 @@ export default function ContentManagementPage() {
                   setSelectedContent(null);
                 }}
               >
-                Cancelar
+                Cancel
               </Button>
               <Button
                 variant="destructive"
                 onClick={confirmDelete}
                 disabled={deleteMutation.isPending}
               >
-                {deleteMutation.isPending ? "Eliminando..." : "Eliminar"}
+                {deleteMutation.isPending ? "Deleting..." : "Delete"}
               </Button>
             </DialogFooter>
           </DialogContent>

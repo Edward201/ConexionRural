@@ -7,6 +7,12 @@ import { cn } from "@/lib/utils"
 
 const ToastProvider = ToastPrimitives.Provider
 
+/**
+ * A component that displays a viewport for toasts.
+ * @param {React.ComponentPropsWithoutRef<typeof ToastPrimitives.Viewport>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof ToastPrimitives.Viewport>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered toast viewport.
+ */
 const ToastViewport = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Viewport>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Viewport>
@@ -38,6 +44,12 @@ const toastVariants = cva(
   }
 )
 
+/**
+ * A component that displays a toast.
+ * @param {React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> & VariantProps<typeof toastVariants>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof ToastPrimitives.Root>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered toast.
+ */
 const Toast = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
@@ -53,6 +65,12 @@ const Toast = React.forwardRef<
 })
 Toast.displayName = ToastPrimitives.Root.displayName
 
+/**
+ * A component that displays an action for a toast.
+ * @param {React.ComponentPropsWithoutRef<typeof ToastPrimitives.Action>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof ToastPrimitives.Action>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered toast action.
+ */
 const ToastAction = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Action>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Action>
@@ -68,6 +86,12 @@ const ToastAction = React.forwardRef<
 ))
 ToastAction.displayName = ToastPrimitives.Action.displayName
 
+/**
+ * A component that displays a close button for a toast.
+ * @param {React.ComponentPropsWithoutRef<typeof ToastPrimitives.Close>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof ToastPrimitives.Close>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered toast close button.
+ */
 const ToastClose = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Close>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Close>
@@ -86,6 +110,12 @@ const ToastClose = React.forwardRef<
 ))
 ToastClose.displayName = ToastPrimitives.Close.displayName
 
+/**
+ * A component that displays the title of a toast.
+ * @param {React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof ToastPrimitives.Title>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered toast title.
+ */
 const ToastTitle = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Title>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title>
@@ -98,6 +128,12 @@ const ToastTitle = React.forwardRef<
 ))
 ToastTitle.displayName = ToastPrimitives.Title.displayName
 
+/**
+ * A component that displays the description of a toast.
+ * @param {React.ComponentPropsWithoutRef<typeof ToastPrimitives.Description>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof ToastPrimitives.Description>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered toast description.
+ */
 const ToastDescription = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Description>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Description>

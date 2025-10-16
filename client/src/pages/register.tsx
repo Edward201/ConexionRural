@@ -11,6 +11,10 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { trackConversion } from "@/lib/analytics";
 
+/**
+ * The registration page.
+ * @returns {JSX.Element} The rendered registration page.
+ */
 export default function RegisterPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -34,18 +38,18 @@ export default function RegisterPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Error al registrarse");
+        throw new Error(error.message || "Error registering");
       }
 
       return response.json();
     },
     onSuccess: () => {
-      // Trackear conversión de registro
+      // Track registration conversion
       trackConversion("registration");
       
       toast({
-        title: "¡Registro exitoso!",
-        description: "Ahora puedes iniciar sesión con tus credenciales",
+        title: "Registration successful!",
+        description: "You can now log in with your credentials",
       });
       setLocation("/login");
     },
@@ -58,6 +62,10 @@ export default function RegisterPage() {
     },
   });
 
+  /**
+   * Handles the form submission.
+   * @param {InsertUser} data - The form data.
+   */
   const onSubmit = (data: InsertUser) => {
     setIsLoading(true);
     registerMutation.mutate(data, {
@@ -70,20 +78,20 @@ export default function RegisterPage() {
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Crear Cuenta
+            Create Account
           </CardTitle>
           <CardDescription className="text-center">
-            Completa el formulario para registrarte
+            Complete the form to register
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Usuario</Label>
+              <Label htmlFor="username">User</Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="tu_usuario"
+                placeholder="your_user"
                 {...register("username")}
                 disabled={isLoading}
               />
@@ -97,7 +105,7 @@ export default function RegisterPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="tu@email.com"
+                placeholder="your@email.com"
                 {...register("email")}
                 disabled={isLoading}
               />
@@ -107,7 +115,7 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -125,17 +133,17 @@ export default function RegisterPage() {
               className="w-full" 
               disabled={isLoading}
             >
-              {isLoading ? "Registrando..." : "Registrarse"}
+              {isLoading ? "Registering..." : "Sign up"}
             </Button>
           </form>
 
           <div className="mt-4 text-center text-sm text-gray-600">
-            ¿Ya tienes cuenta?{" "}
+            Already have an account?{" "}
             <button
               onClick={() => setLocation("/login")}
               className="text-blue-600 hover:underline font-medium"
             >
-              Iniciar Sesión
+              Log In
             </button>
           </div>
         </CardContent>

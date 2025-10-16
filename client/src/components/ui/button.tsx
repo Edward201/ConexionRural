@@ -39,6 +39,16 @@ export interface ButtonProps
   asChild?: boolean
 }
 
+/**
+ * A component that displays a button or a link with button styling.
+ * @param {ButtonProps} props - The props for the component.
+ * @param {string} [props.className] - Additional class names for styling.
+ * @param {object} [props.variant] - The variant of the button.
+ * @param {object} [props.size] - The size of the button.
+ * @param {boolean} [props.asChild] - Whether to render the button as a child component.
+ * @param {React.Ref<HTMLButtonElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered button.
+ */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"

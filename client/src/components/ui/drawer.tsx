@@ -5,6 +5,16 @@ import { Drawer as DrawerPrimitive } from "vaul"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * @typedef DrawerProps
+ * @property {boolean} [shouldScaleBackground] - Whether the background should be scaled when the drawer is open.
+ */
+
+/**
+ * A component that displays a drawer from the bottom of the screen.
+ * @param {DrawerProps & React.ComponentProps<typeof DrawerPrimitive.Root>} props - The props for the component.
+ * @returns {JSX.Element} The rendered drawer.
+ */
 const Drawer = ({
   shouldScaleBackground = true,
   ...props
@@ -22,6 +32,17 @@ const DrawerPortal = DrawerPrimitive.Portal
 
 const DrawerClose = DrawerPrimitive.Close
 
+/**
+ * @typedef DrawerOverlayProps
+ * @property {string} [className] - Additional class names for styling.
+ */
+
+/**
+ * A component that darkens the background when the drawer is open.
+ * @param {DrawerOverlayProps & React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof DrawerPrimitive.Overlay>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered drawer overlay.
+ */
 const DrawerOverlay = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>
@@ -34,6 +55,18 @@ const DrawerOverlay = React.forwardRef<
 ))
 DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName
 
+/**
+ * @typedef DrawerContentProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the drawer.
+ */
+
+/**
+ * A component that contains the content of the drawer.
+ * @param {DrawerContentProps & React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof DrawerPrimitive.Content>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered drawer content.
+ */
 const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
@@ -55,6 +88,17 @@ const DrawerContent = React.forwardRef<
 ))
 DrawerContent.displayName = "DrawerContent"
 
+/**
+ * @typedef DrawerHeaderProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the drawer header.
+ */
+
+/**
+ * A component that represents the header of a drawer.
+ * @param {DrawerHeaderProps & React.HTMLAttributes<HTMLDivElement>} props - The props for the component.
+ * @returns {JSX.Element} The rendered drawer header.
+ */
 const DrawerHeader = ({
   className,
   ...props
@@ -66,6 +110,17 @@ const DrawerHeader = ({
 )
 DrawerHeader.displayName = "DrawerHeader"
 
+/**
+ * @typedef DrawerFooterProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the drawer footer.
+ */
+
+/**
+ * A component that represents the footer of a drawer.
+ * @param {DrawerFooterProps & React.HTMLAttributes<HTMLDivElement>} props - The props for the component.
+ * @returns {JSX.Element} The rendered drawer footer.
+ */
 const DrawerFooter = ({
   className,
   ...props
@@ -77,6 +132,18 @@ const DrawerFooter = ({
 )
 DrawerFooter.displayName = "DrawerFooter"
 
+/**
+ * @typedef DrawerTitleProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the drawer title.
+ */
+
+/**
+ * A component that represents the title of a drawer.
+ * @param {DrawerTitleProps & React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Title>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof DrawerPrimitive.Title>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered drawer title.
+ */
 const DrawerTitle = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Title>
@@ -92,6 +159,18 @@ const DrawerTitle = React.forwardRef<
 ))
 DrawerTitle.displayName = DrawerPrimitive.Title.displayName
 
+/**
+ * @typedef DrawerDescriptionProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the drawer description.
+ */
+
+/**
+ * A component that represents the description of a drawer.
+ * @param {DrawerDescriptionProps & React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Description>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof DrawerPrimitive.Description>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered drawer description.
+ */
 const DrawerDescription = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Description>

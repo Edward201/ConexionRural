@@ -19,6 +19,19 @@ const alertVariants = cva(
   }
 )
 
+/**
+ * @typedef AlertProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {object} [variant] - The variant of the alert.
+ * @property {React.ReactNode} children - The content of the alert.
+ */
+
+/**
+ * A component that displays a callout for user attention.
+ * @param {AlertProps} props - The props for the component.
+ * @param {React.Ref<HTMLDivElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered alert.
+ */
 const Alert = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants>
@@ -32,6 +45,18 @@ const Alert = React.forwardRef<
 ))
 Alert.displayName = "Alert"
 
+/**
+ * @typedef AlertTitleProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the alert title.
+ */
+
+/**
+ * A component that represents the title of the alert.
+ * @param {AlertTitleProps} props - The props for the component.
+ * @param {React.Ref<HTMLParagraphElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered alert title.
+ */
 const AlertTitle = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLHeadingElement>
@@ -44,6 +69,18 @@ const AlertTitle = React.forwardRef<
 ))
 AlertTitle.displayName = "AlertTitle"
 
+/**
+ * @typedef AlertDescriptionProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the alert description.
+ */
+
+/**
+ * A component that represents the description of the alert.
+ * @param {AlertDescriptionProps} props - The props for the component.
+ * @param {React.Ref<HTMLParagraphElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered alert description.
+ */
 const AlertDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>

@@ -4,6 +4,19 @@ import { Check } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * @typedef CheckboxProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {boolean} [checked] - Whether the checkbox is checked.
+ * @property {function} [onCheckedChange] - A callback function that is called when the checkbox is checked or unchecked.
+ */
+
+/**
+ * A component that allows the user to select one or more options from a set.
+ * @param {CheckboxProps & React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>} props - The props for the component.
+ * @param {React.Ref<HTMLButtonElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered checkbox.
+ */
 const Checkbox = React.forwardRef<
   React.ElementRef<typeof CheckboxPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>

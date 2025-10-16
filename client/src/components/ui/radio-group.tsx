@@ -4,6 +4,17 @@ import { Circle } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * @typedef RadioGroupProps
+ * @property {string} [className] - Additional class names for styling.
+ */
+
+/**
+ * A component that displays a set of radio buttons.
+ * @param {RadioGroupProps & React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof RadioGroupPrimitive.Root>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered radio group.
+ */
 const RadioGroup = React.forwardRef<
   React.ElementRef<typeof RadioGroupPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>
@@ -18,6 +29,17 @@ const RadioGroup = React.forwardRef<
 })
 RadioGroup.displayName = RadioGroupPrimitive.Root.displayName
 
+/**
+ * @typedef RadioGroupItemProps
+ * @property {string} [className] - Additional class names for styling.
+ */
+
+/**
+ * A component that represents a single radio button in a radio group.
+ * @param {RadioGroupItemProps & React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof RadioGroupPrimitive.Item>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered radio group item.
+ */
 const RadioGroupItem = React.forwardRef<
   React.ElementRef<typeof RadioGroupPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item>

@@ -10,6 +10,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
+/**
+ * The login page.
+ * @returns {JSX.Element} The rendered login page.
+ */
 export default function LoginPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -34,18 +38,18 @@ export default function LoginPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Error al iniciar sesión");
+        throw new Error(error.message || "Error logging in");
       }
 
       return response.json();
     },
     onSuccess: (data) => {
       toast({
-        title: "¡Bienvenido!",
-        description: `Has iniciado sesión como ${data.user.username}`,
+        title: "Welcome!",
+        description: `You have logged in as ${data.user.username}`,
       });
 
-      // Redirigir según el rol
+      // Redirect based on role
       if (data.user.role === "admin") {
         setLocation("/dashboard");
       } else {
@@ -73,20 +77,20 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Iniciar Sesión
+            Log In
           </CardTitle>
           <CardDescription className="text-center">
-            Ingresa tus credenciales para acceder
+            Enter your credentials to access
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Usuario</Label>
+              <Label htmlFor="username">User</Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="tu_usuario"
+                placeholder="your_user"
                 {...register("username")}
                 disabled={isLoading}
               />
@@ -96,7 +100,7 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -114,17 +118,17 @@ export default function LoginPage() {
               className="w-full" 
               disabled={isLoading}
             >
-              {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
+              {isLoading ? "Logging in..." : "Log In"}
             </Button>
           </form>
 
           <div className="mt-4 text-center text-sm text-gray-600">
-            ¿No tienes cuenta?{" "}
+            Don't have an account?{" "}
             <button
               onClick={() => setLocation("/register")}
               className="text-blue-600 hover:underline font-medium"
             >
-              Registrarse
+              Sign up
             </button>
           </div>
         </CardContent>

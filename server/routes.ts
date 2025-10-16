@@ -8,40 +8,45 @@ import { fromError } from "zod-validation-error";
 import { db } from "./db";
 import { eq, sql, and, gte, desc, count, asc } from "drizzle-orm";
 
+/**
+ * Registers the routes for the application.
+ * @param {Express} app - The Express application.
+ * @returns {Promise<Server>} The HTTP server.
+ */
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Configurar autenticación
+  // Set up authentication
   setupAuth(app);
 
-  // ==================== RUTAS DE AUTENTICACIÓN ====================
+  // ==================== AUTHENTICATION ROUTES ====================
 
-  // POST /api/auth/register - Registrar nuevo usuario
+  // POST /api/auth/register - Register a new user
   app.post("/api/auth/register", async (req, res, next) => {
     try {
       const result = insertUserSchema.safeParse(req.body);
       
       if (!result.success) {
         return res.status(400).json({ 
-          message: "Datos inválidos", 
+          message: "Invalid data",
           errors: fromError(result.error).toString() 
         });
       }
 
-      // Verificar si el usuario ya existe
+      // Check if the user already exists
       const existingUser = await storage.getUserByUsername(result.data.username);
       if (existingUser) {
-        return res.status(400).json({ message: "El usuario ya existe" });
+        return res.status(400).json({ message: "The user already exists" });
       }
 
       const existingEmail = await storage.getUserByEmail(result.data.email);
       if (existingEmail) {
-        return res.status(400).json({ message: "El email ya está registrado" });
+        return res.status(400).json({ message: "The email is already registered" });
       }
 
-      // Crear usuario
+      // Create user
       const newUser = await storage.createUser(result.data);
 
       res.status(201).json({
-        message: "Usuario registrado exitosamente",
+        message: "User registered successfully",
         user: newUser,
       });
     } catch (error) {
@@ -49,13 +54,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // POST /api/auth/login - Iniciar sesión
+  // POST /api/auth/login - Log in
   app.post("/api/auth/login", (req, res, next) => {
     const result = loginSchema.safeParse(req.body);
 
     if (!result.success) {
       return res.status(400).json({
-        message: "Datos inválidos",
+        message: "Invalid data",
         errors: fromError(result.error).toString(),
       });
     }
@@ -67,7 +72,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!user) {
         return res.status(401).json({ 
-          message: info?.message || "Credenciales inválidas" 
+          message: info?.message || "Invalid credentials"
         });
       }
 
@@ -77,31 +82,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         return res.json({
-          message: "Inicio de sesión exitoso",
+          message: "Login successful",
           user,
         });
       });
     })(req, res, next);
   });
 
-  // POST /api/auth/logout - Cerrar sesión
+  // POST /api/auth/logout - Log out
   app.post("/api/auth/logout", (req, res) => {
     req.logout((err) => {
       if (err) {
-        return res.status(500).json({ message: "Error al cerrar sesión" });
+        return res.status(500).json({ message: "Error logging out" });
       }
-      res.json({ message: "Sesión cerrada exitosamente" });
+      res.json({ message: "Session closed successfully" });
     });
   });
 
-  // GET /api/auth/me - Obtener usuario actual
+  // GET /api/auth/me - Get the current user
   app.get("/api/auth/me", isAuthenticated, (req, res) => {
     res.json({ user: req.user });
   });
 
-  // ==================== RUTAS DEL DASHBOARD (Admin) ====================
+  // ==================== DASHBOARD ROUTES (Admin) ====================
 
-  // GET /api/dashboard/users - Listar todos los usuarios (solo admin)
+  // GET /api/dashboard/users - List all users (admin only)
   app.get("/api/dashboard/users", isAuthenticated, isAdmin, async (req, res, next) => {
     try {
       const users = await storage.getAllUsers();
@@ -111,7 +116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // PUT /api/dashboard/users/:id - Actualizar usuario (solo admin)
+  // PUT /api/dashboard/users/:id - Update a user (admin only)
   app.put("/api/dashboard/users/:id", isAuthenticated, isAdmin, async (req, res, next) => {
     try {
       const userId = parseInt(req.params.id);
@@ -125,11 +130,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       if (!updated) {
-        return res.status(404).json({ message: "Usuario no encontrado" });
+        return res.status(404).json({ message: "User not found" });
       }
 
       res.json({ 
-        message: "Usuario actualizado exitosamente", 
+        message: "User updated successfully",
         user: updated 
       });
     } catch (error) {
@@ -137,7 +142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/dashboard/stats - Estadísticas básicas (solo admin)
+  // GET /api/dashboard/stats - Basic statistics (admin only)
   app.get("/api/dashboard/stats", isAuthenticated, isAdmin, async (req, res, next) => {
     try {
       const users = await storage.getAllUsers();
@@ -153,16 +158,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ==================== RUTAS DE ANALYTICS ====================
+  // ==================== ANALYTICS ROUTES ====================
 
-  // POST /api/analytics/track - Registrar evento de analytics (público)
+  // POST /api/analytics/track - Register an analytics event (public)
   app.post("/api/analytics/track", async (req, res, next) => {
     try {
       const result = insertAnalyticsSchema.safeParse(req.body);
       
       if (!result.success) {
         return res.status(400).json({ 
-          message: "Datos inválidos", 
+          message: "Invalid data",
           errors: fromError(result.error).toString() 
         });
       }
@@ -174,26 +179,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/analytics/overview - Resumen general de analytics (Admin)
+  // GET /api/analytics/overview - General analytics summary (Admin)
   app.get("/api/analytics/overview", isAuthenticated, isAdmin, async (req, res, next) => {
     try {
       const { days = 30, source, deviceType, pageUrl } = req.query;
       const daysAgo = new Date();
       daysAgo.setDate(daysAgo.getDate() - Number(days));
 
-      // Construir filtros dinámicamente
+      // Build filters dynamically
       const filters: any[] = [gte(analytics.visitedAt, daysAgo)];
       if (source && source !== "all") filters.push(eq(analytics.source, source as string));
       if (deviceType && deviceType !== "all") filters.push(eq(analytics.deviceType, deviceType as string));
       if (pageUrl) filters.push(eq(analytics.pageUrl, pageUrl as string));
 
-      // Total de visitas
+      // Total visits
       const [totalVisits] = await db
         .select({ count: count() })
         .from(analytics)
         .where(and(...filters));
 
-      // Usuarios nuevos vs recurrentes
+      // New vs. returning users
       const [newUsers] = await db
         .select({ count: count() })
         .from(analytics)
@@ -204,13 +209,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(analytics)
         .where(and(...filters, eq(analytics.isNewUser, false)));
 
-      // Tiempo promedio en página
+      // Average time on page
       const [avgTime] = await db
         .select({ avg: sql<number>`AVG(${analytics.timeOnPage})` })
         .from(analytics)
         .where(and(...filters));
 
-      // Tasa de rebote
+      // Bounce rate
       const [bouncedCount] = await db
         .select({ count: count() })
         .from(analytics)
@@ -220,7 +225,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? ((bouncedCount.count / totalVisits.count) * 100).toFixed(2)
         : 0;
 
-      // Conversiones
+      // Conversions
       const [conversions] = await db
         .select({ count: count() })
         .from(analytics)
@@ -241,7 +246,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/analytics/sources - Fuentes de tráfico (Admin)
+  // GET /api/analytics/sources - Traffic sources (Admin)
   app.get("/api/analytics/sources", isAuthenticated, isAdmin, async (req, res, next) => {
     try {
       const { days = 30 } = req.query;
@@ -265,7 +270,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/analytics/pages - Páginas más visitadas (Admin)
+  // GET /api/analytics/pages - Most visited pages (Admin)
   app.get("/api/analytics/pages", isAuthenticated, isAdmin, async (req, res, next) => {
     try {
       const { days = 30 } = req.query;
@@ -291,7 +296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/analytics/devices - Dispositivos usados (Admin)
+  // GET /api/analytics/devices - Devices used (Admin)
   app.get("/api/analytics/devices", isAuthenticated, isAdmin, async (req, res, next) => {
     try {
       const { days = 30 } = req.query;
@@ -316,7 +321,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/analytics/conversions - Conversiones por tipo (Admin)
+  // GET /api/analytics/conversions - Conversions by type (Admin)
   app.get("/api/analytics/conversions", isAuthenticated, isAdmin, async (req, res, next) => {
     try {
       const { days = 30 } = req.query;
@@ -342,7 +347,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/analytics/timeline - Visitas por día (Admin)
+  // GET /api/analytics/timeline - Visits per day (Admin)
   app.get("/api/analytics/timeline", isAuthenticated, isAdmin, async (req, res, next) => {
     try {
       const { days = 30 } = req.query;
@@ -367,9 +372,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ==================== RUTAS DE CMS (Gestión de Contenido) ====================
+  // ==================== CMS ROUTES (Content Management) ====================
 
-  // GET /api/content - Obtener todo el contenido (público)
+  // GET /api/content - Get all content (public)
   app.get("/api/content", async (req, res, next) => {
     try {
       const contents = await db
@@ -384,7 +389,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/content/:section - Obtener contenido de una sección específica (público)
+  // GET /api/content/:section - Get content for a specific section (public)
   app.get("/api/content/:section", async (req, res, next) => {
     try {
       const { section } = req.params;
@@ -397,7 +402,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ));
 
       if (!content) {
-        return res.status(404).json({ message: "Sección no encontrada" });
+        return res.status(404).json({ message: "Section not found" });
       }
 
       res.json({ content });
@@ -406,16 +411,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/cms/content - Obtener todo el contenido (Admin)
+  // GET /api/cms/content - Get all content (Admin)
   app.get("/api/cms/content", isAuthenticated, isAdmin, async (req, res, next) => {
     try {
-      console.log('🔍 [CMS] Obteniendo contenido...');
+      console.log('🔍 [CMS] Getting content...');
       const contents = await db
         .select()
         .from(pageContent)
         .orderBy(asc(pageContent.order));
 
-      console.log(`✅ [CMS] Encontradas ${contents.length} secciones`);
+      console.log(`✅ [CMS] Found ${contents.length} sections`);
       res.json({ contents });
     } catch (error) {
       console.error('❌ [CMS] Error:', error);
@@ -423,14 +428,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // POST /api/cms/content - Crear nueva sección de contenido (Admin)
+  // POST /api/cms/content - Create a new content section (Admin)
   app.post("/api/cms/content", isAuthenticated, isAdmin, async (req, res, next) => {
     try {
       const result = insertPageContentSchema.safeParse(req.body);
       
       if (!result.success) {
         return res.status(400).json({ 
-          message: "Datos inválidos", 
+          message: "Invalid data",
           errors: fromError(result.error).toString() 
         });
       }
@@ -444,7 +449,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .returning();
 
       res.status(201).json({
-        message: "Contenido creado exitosamente",
+        message: "Content created successfully",
         content: newContent,
       });
     } catch (error) {
@@ -452,7 +457,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // PUT /api/cms/content/:id - Actualizar contenido (Admin)
+  // PUT /api/cms/content/:id - Update content (Admin)
   app.put("/api/cms/content/:id", isAuthenticated, isAdmin, async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -478,11 +483,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .returning();
 
       if (!updated) {
-        return res.status(404).json({ message: "Contenido no encontrado" });
+        return res.status(404).json({ message: "Content not found" });
       }
 
       res.json({
-        message: "Contenido actualizado exitosamente",
+        message: "Content updated successfully",
         content: updated,
       });
     } catch (error) {
@@ -490,7 +495,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // DELETE /api/cms/content/:id - Eliminar contenido (Admin)
+  // DELETE /api/cms/content/:id - Delete content (Admin)
   app.delete("/api/cms/content/:id", isAuthenticated, isAdmin, async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -501,11 +506,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .returning();
 
       if (!deleted) {
-        return res.status(404).json({ message: "Contenido no encontrado" });
+        return res.status(404).json({ message: "Content not found" });
       }
 
       res.json({
-        message: "Contenido eliminado exitosamente",
+        message: "Content deleted successfully",
         content: deleted,
       });
     } catch (error) {

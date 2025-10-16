@@ -20,25 +20,33 @@ import galleryImage9 from "@assets/image_1753932387634.png";
 import galleryImage10 from "@assets/image_1753932392897.png";
 import galleryImage11 from "@assets/image_1753932401149.png";
 
+/**
+ * The home page of the application.
+ * @returns {JSX.Element} The rendered home page.
+ */
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [stats, setStats] = useState({ students: 0, schools: 0, themes: 0 });
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [activePhase, setActivePhase] = useState<string | null>(null);
 
-  // Cargar contenido del CMS
+  // Load content from the CMS
   const { data: cmsData } = useQuery({
     queryKey: ["page-content"],
     queryFn: async () => {
       const response = await fetch("/api/content");
-      if (!response.ok) throw new Error("Error al cargar contenido");
+      if (!response.ok) throw new Error("Error loading content");
       return response.json();
     },
   });
 
   const contents: PageContent[] = cmsData?.contents || [];
   
-  // Función helper para obtener contenido de una sección
+  /**
+   * Helper function to get content for a section.
+   * @param {string} section - The name of the section.
+   * @returns {PageContent | undefined} The content of the section.
+   */
   const getSection = (section: string) => 
     contents.find((c) => c.section === section && c.isVisible);
 
@@ -85,6 +93,10 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
+  /**
+   * Scrolls to a section of the page.
+   * @param {string} sectionId - The ID of the section to scroll to.
+   */
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {

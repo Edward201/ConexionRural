@@ -24,6 +24,10 @@ const actionTypes = {
 
 let count = 0
 
+/**
+ * Generates a unique ID for a toast.
+ * @returns {string} The unique ID.
+ */
 function genId() {
   count = (count + 1) % Number.MAX_SAFE_INTEGER
   return count.toString()
@@ -55,6 +59,10 @@ interface State {
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
+/**
+ * Adds a toast to the remove queue.
+ * @param {string} toastId - The ID of the toast to remove.
+ */
 const addToRemoveQueue = (toastId: string) => {
   if (toastTimeouts.has(toastId)) {
     return
@@ -71,6 +79,12 @@ const addToRemoveQueue = (toastId: string) => {
   toastTimeouts.set(toastId, timeout)
 }
 
+/**
+ * The reducer for the toast state.
+ * @param {State} state - The current state.
+ * @param {Action} action - The action to perform.
+ * @returns {State} The new state.
+ */
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "ADD_TOAST":
@@ -130,6 +144,10 @@ const listeners: Array<(state: State) => void> = []
 
 let memoryState: State = { toasts: [] }
 
+/**
+ * Dispatches an action to the toast state.
+ * @param {Action} action - The action to dispatch.
+ */
 function dispatch(action: Action) {
   memoryState = reducer(memoryState, action)
   listeners.forEach((listener) => {
@@ -139,6 +157,11 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
+/**
+ * Displays a toast.
+ * @param {Toast} props - The props for the toast.
+ * @returns {{id: string, dismiss: () => void, update: (props: ToasterToast) => void}} - An object with the toast's ID and functions to dismiss and update it.
+ */
 function toast({ ...props }: Toast) {
   const id = genId()
 
@@ -168,6 +191,10 @@ function toast({ ...props }: Toast) {
   }
 }
 
+/**
+ * A hook to use the toast state.
+ * @returns {{toasts: ToasterToast[], toast: ({ ...props }: Toast) => {id: string, dismiss: () => void, update: (props: ToasterToast) => void}, dismiss: (toastId?: string) => void}} - The toast state and functions to interact with it.
+ */
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
 

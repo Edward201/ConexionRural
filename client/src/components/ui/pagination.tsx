@@ -4,6 +4,11 @@ import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ButtonProps, buttonVariants } from "@/components/ui/button"
 
+/**
+ * A component that displays a pagination control.
+ * @param {React.ComponentProps<"nav">} props - The props for the component.
+ * @returns {JSX.Element} The rendered pagination control.
+ */
 const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
   <nav
     role="navigation"
@@ -14,6 +19,12 @@ const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
 )
 Pagination.displayName = "Pagination"
 
+/**
+ * A component that contains the content of a pagination control.
+ * @param {React.ComponentProps<"ul">} props - The props for the component.
+ * @param {React.Ref<HTMLUListElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered pagination content.
+ */
 const PaginationContent = React.forwardRef<
   HTMLUListElement,
   React.ComponentProps<"ul">
@@ -26,6 +37,12 @@ const PaginationContent = React.forwardRef<
 ))
 PaginationContent.displayName = "PaginationContent"
 
+/**
+ * A component that represents a single item in a pagination control.
+ * @param {React.ComponentProps<"li">} props - The props for the component.
+ * @param {React.Ref<HTMLLIElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered pagination item.
+ */
 const PaginationItem = React.forwardRef<
   HTMLLIElement,
   React.ComponentProps<"li">
@@ -39,6 +56,11 @@ type PaginationLinkProps = {
 } & Pick<ButtonProps, "size"> &
   React.ComponentProps<"a">
 
+/**
+ * A component that displays a link in a pagination control.
+ * @param {PaginationLinkProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered pagination link.
+ */
 const PaginationLink = ({
   className,
   isActive,
@@ -59,6 +81,11 @@ const PaginationLink = ({
 )
 PaginationLink.displayName = "PaginationLink"
 
+/**
+ * A component that displays a link to the previous page in a pagination control.
+ * @param {React.ComponentProps<typeof PaginationLink>} props - The props for the component.
+ * @returns {JSX.Element} The rendered pagination previous link.
+ */
 const PaginationPrevious = ({
   className,
   ...props
@@ -75,6 +102,11 @@ const PaginationPrevious = ({
 )
 PaginationPrevious.displayName = "PaginationPrevious"
 
+/**
+ * A component that displays a link to the next page in a pagination control.
+ * @param {React.ComponentProps<typeof PaginationLink>} props - The props for the component.
+ * @returns {JSX.Element} The rendered pagination next link.
+ */
 const PaginationNext = ({
   className,
   ...props
@@ -91,6 +123,11 @@ const PaginationNext = ({
 )
 PaginationNext.displayName = "PaginationNext"
 
+/**
+ * A component that displays an ellipsis in a pagination control.
+ * @param {React.ComponentProps<"span">} props - The props for the component.
+ * @returns {JSX.Element} The rendered pagination ellipsis.
+ */
 const PaginationEllipsis = ({
   className,
   ...props

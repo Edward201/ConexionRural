@@ -1,6 +1,6 @@
 /**
- * Librería de Analytics
- * Funciones para detectar dispositivos, navegadores, fuentes de tráfico, etc.
+ * Analytics library
+ * Functions to detect devices, browsers, traffic sources, etc.
  */
 
 export interface AnalyticsEvent {
@@ -22,7 +22,10 @@ export interface AnalyticsEvent {
   conversionValue?: number;
 }
 
-// Detectar tipo de dispositivo
+/**
+ * Detects the type of device.
+ * @returns {"mobile" | "desktop" | "tablet"} The type of device.
+ */
 export function getDeviceType(): "mobile" | "desktop" | "tablet" {
   const ua = navigator.userAgent;
   if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
@@ -34,7 +37,10 @@ export function getDeviceType(): "mobile" | "desktop" | "tablet" {
   return "desktop";
 }
 
-// Detectar navegador
+/**
+ * Detects the browser.
+ * @returns {string} The name of the browser.
+ */
 export function detectBrowser(): string {
   const ua = navigator.userAgent;
   if (ua.includes("Firefox")) return "Firefox";
@@ -45,7 +51,10 @@ export function detectBrowser(): string {
   return "Unknown";
 }
 
-// Detectar sistema operativo
+/**
+ * Detects the operating system.
+ * @returns {string} The name of the operating system.
+ */
 export function detectOS(): string {
   const ua = navigator.userAgent;
   if (ua.includes("Win")) return "Windows";
@@ -56,7 +65,10 @@ export function detectOS(): string {
   return "Unknown";
 }
 
-// Obtener o crear session ID
+/**
+ * Gets or creates a session ID.
+ * @returns {string} The session ID.
+ */
 export function getSessionId(): string {
   const storageKey = "analytics_session_id";
   let sessionId = sessionStorage.getItem(storageKey);
@@ -69,7 +81,10 @@ export function getSessionId(): string {
   return sessionId;
 }
 
-// Detectar fuente de tráfico
+/**
+ * Detects the traffic source.
+ * @returns {string} The traffic source.
+ */
 export function detectSource(): string {
   const referrer = document.referrer.toLowerCase();
   
@@ -90,7 +105,10 @@ export function detectSource(): string {
   return "referral";
 }
 
-// Detectar medium (red social específica o motor de búsqueda)
+/**
+ * Detects the medium (specific social network or search engine).
+ * @returns {string | null} The medium.
+ */
 export function detectMedium(): string | null {
   const referrer = document.referrer.toLowerCase();
   
@@ -109,7 +127,10 @@ export function detectMedium(): string | null {
   return null;
 }
 
-// Verificar si es primera visita
+/**
+ * Checks if it is the first visit.
+ * @returns {boolean} Whether it is the first visit.
+ */
 export function isFirstVisit(): boolean {
   const storageKey = "has_visited";
   const visited = localStorage.getItem(storageKey);
@@ -123,22 +144,32 @@ export function isFirstVisit(): boolean {
   return false;
 }
 
-// Obtener resolución de pantalla
+/**
+ * Gets the screen resolution.
+ * @returns {string} The screen resolution.
+ */
 export function getScreenResolution(): string {
   return `${window.screen.width}x${window.screen.height}`;
 }
 
-// Obtener datos de geolocalización (simplificado, usar API en producción)
+/**
+ * Gets the geolocation data (simplified, use API in production).
+ * @returns {Promise<{ country: string; city: string } | null>} The geolocation data.
+ */
 export async function getLocation(): Promise<{ country: string; city: string } | null> {
   try {
-    // En producción, usar una API como ipapi.co o geoip
+    // In production, use an API like ipapi.co or geoip
     return { country: "Colombia", city: "Bogotá" };
   } catch (error) {
     return null;
   }
 }
 
-// Trackear evento de página vista
+/**
+ * Tracks a page view event.
+ * @param {string} url - The URL of the page.
+ * @param {string} title - The title of the page.
+ */
 export async function trackPageView(url: string, title: string): Promise<void> {
   try {
     const location = await getLocation();
@@ -168,14 +199,18 @@ export async function trackPageView(url: string, title: string): Promise<void> {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(event),
-      keepalive: true, // Asegura que se envíe incluso si el usuario cierra la página
+      keepalive: true, // Ensures it is sent even if the user closes the page
     });
   } catch (error) {
     console.error("Error tracking page view:", error);
   }
 }
 
-// Trackear conversión
+/**
+ * Tracks a conversion.
+ * @param {string} type - The type of conversion.
+ * @param {number} [value] - The value of the conversion.
+ */
 export async function trackConversion(
   type: string,
   value?: number
@@ -209,22 +244,28 @@ export async function trackConversion(
   }
 }
 
-// Trackear tiempo en página al salir
+// Track time on page when leaving
 let pageStartTime = Date.now();
 let hasTrackedTimeOnPage = false;
 
+/**
+ * Starts tracking time on page.
+ */
 export function startTrackingTime(): void {
   pageStartTime = Date.now();
   hasTrackedTimeOnPage = false;
 }
 
+/**
+ * Tracks the time spent on the page.
+ */
 export async function trackTimeOnPage(): Promise<void> {
   if (hasTrackedTimeOnPage) return;
   
   const timeOnPage = Math.floor((Date.now() - pageStartTime) / 1000);
   hasTrackedTimeOnPage = true;
   
-  // Considerar rebote si el tiempo es menor a 10 segundos
+  // Consider bounce if time is less than 10 seconds
   const bounced = timeOnPage < 10;
 
   try {
@@ -254,12 +295,14 @@ export async function trackTimeOnPage(): Promise<void> {
   }
 }
 
-// Configurar listeners para trackear tiempo automáticamente
+/**
+ * Sets up listeners to automatically track time.
+ */
 export function setupAutoTracking(): void {
-  // Trackear cuando el usuario sale de la página
+  // Track when the user leaves the page
   window.addEventListener("beforeunload", trackTimeOnPage);
   
-  // Trackear cuando la página pierde el foco
+  // Track when the page loses focus
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       trackTimeOnPage();

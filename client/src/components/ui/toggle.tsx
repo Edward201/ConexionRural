@@ -26,6 +26,19 @@ const toggleVariants = cva(
   }
 )
 
+/**
+ * @typedef ToggleProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {object} [variant] - The variant of the toggle.
+ * @property {object} [size] - The size of the toggle.
+ */
+
+/**
+ * A component that displays a toggle button.
+ * @param {ToggleProps & React.ComponentPropsWithoutRef<typeof TogglePrimitive.Root> & VariantProps<typeof toggleVariants>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof TogglePrimitive.Root>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered toggle button.
+ */
 const Toggle = React.forwardRef<
   React.ElementRef<typeof TogglePrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof TogglePrimitive.Root> &

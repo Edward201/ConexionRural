@@ -10,6 +10,17 @@ const AlertDialogTrigger = AlertDialogPrimitive.Trigger
 
 const AlertDialogPortal = AlertDialogPrimitive.Portal
 
+/**
+ * @typedef AlertDialogOverlayProps
+ * @property {string} [className] - Additional class names for styling.
+ */
+
+/**
+ * A component that darkens the background when the alert dialog is open.
+ * @param {AlertDialogOverlayProps} props - The props for the component.
+ * @param {React.Ref<HTMLDivElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered alert dialog overlay.
+ */
 const AlertDialogOverlay = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay>
@@ -25,6 +36,18 @@ const AlertDialogOverlay = React.forwardRef<
 ))
 AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName
 
+/**
+ * @typedef AlertDialogContentProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the alert dialog.
+ */
+
+/**
+ * A component that contains the content of the alert dialog.
+ * @param {AlertDialogContentProps} props - The props for the component.
+ * @param {React.Ref<HTMLDivElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered alert dialog content.
+ */
 const AlertDialogContent = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
@@ -43,6 +66,17 @@ const AlertDialogContent = React.forwardRef<
 ))
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName
 
+/**
+ * @typedef AlertDialogHeaderProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the alert dialog header.
+ */
+
+/**
+ * A component that represents the header of the alert dialog.
+ * @param {AlertDialogHeaderProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered alert dialog header.
+ */
 const AlertDialogHeader = ({
   className,
   ...props
@@ -57,6 +91,17 @@ const AlertDialogHeader = ({
 )
 AlertDialogHeader.displayName = "AlertDialogHeader"
 
+/**
+ * @typedef AlertDialogFooterProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the alert dialog footer.
+ */
+
+/**
+ * A component that represents the footer of the alert dialog.
+ * @param {AlertDialogFooterProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered alert dialog footer.
+ */
 const AlertDialogFooter = ({
   className,
   ...props
@@ -71,6 +116,18 @@ const AlertDialogFooter = ({
 )
 AlertDialogFooter.displayName = "AlertDialogFooter"
 
+/**
+ * @typedef AlertDialogTitleProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the alert dialog title.
+ */
+
+/**
+ * A component that represents the title of the alert dialog.
+ * @param {AlertDialogTitleProps} props - The props for the component.
+ * @param {React.Ref<HTMLHeadingElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered alert dialog title.
+ */
 const AlertDialogTitle = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title>
@@ -83,6 +140,18 @@ const AlertDialogTitle = React.forwardRef<
 ))
 AlertDialogTitle.displayName = AlertDialogPrimitive.Title.displayName
 
+/**
+ * @typedef AlertDialogDescriptionProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the alert dialog description.
+ */
+
+/**
+ * A component that represents the description of the alert dialog.
+ * @param {AlertDialogDescriptionProps} props - The props for the component.
+ * @param {React.Ref<HTMLParagraphElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered alert dialog description.
+ */
 const AlertDialogDescription = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description>
@@ -96,6 +165,18 @@ const AlertDialogDescription = React.forwardRef<
 AlertDialogDescription.displayName =
   AlertDialogPrimitive.Description.displayName
 
+/**
+ * @typedef AlertDialogActionProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the alert dialog action button.
+ */
+
+/**
+ * A component that represents the action button of the alert dialog.
+ * @param {AlertDialogActionProps} props - The props for the component.
+ * @param {React.Ref<HTMLButtonElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered alert dialog action button.
+ */
 const AlertDialogAction = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Action>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action>
@@ -108,6 +189,18 @@ const AlertDialogAction = React.forwardRef<
 ))
 AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName
 
+/**
+ * @typedef AlertDialogCancelProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the alert dialog cancel button.
+ */
+
+/**
+ * A component that represents the cancel button of the alert dialog.
+ * @param {AlertDialogCancelProps} props - The props for the component.
+ * @param {React.Ref<HTMLButtonElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered alert dialog cancel button.
+ */
 const AlertDialogCancel = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Cancel>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel>

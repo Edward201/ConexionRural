@@ -5,6 +5,18 @@ import * as ProgressPrimitive from "@radix-ui/react-progress"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * @typedef ProgressProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {number} [value] - The value of the progress bar.
+ */
+
+/**
+ * A component that displays a progress bar.
+ * @param {ProgressProps & React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof ProgressPrimitive.Root>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered progress bar.
+ */
 const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>

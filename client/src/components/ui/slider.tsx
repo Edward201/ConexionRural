@@ -3,6 +3,19 @@ import * as SliderPrimitive from "@radix-ui/react-slider"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * @typedef SliderProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {number[]} [value] - The value of the slider.
+ * @property {function} [onValueChange] - A callback function that is called when the value of the slider changes.
+ */
+
+/**
+ * A component that allows the user to select a value from a range.
+ * @param {SliderProps & React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof SliderPrimitive.Root>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered slider.
+ */
 const Slider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root>

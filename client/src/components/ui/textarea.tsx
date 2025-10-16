@@ -2,6 +2,17 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * @typedef TextareaProps
+ * @property {string} [className] - Additional class names for styling.
+ */
+
+/**
+ * A component that displays a textarea.
+ * @param {TextareaProps & React.ComponentProps<"textarea">} props - The props for the component.
+ * @param {React.Ref<HTMLTextAreaElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered textarea.
+ */
 const Textarea = React.forwardRef<
   HTMLTextAreaElement,
   React.ComponentProps<"textarea">

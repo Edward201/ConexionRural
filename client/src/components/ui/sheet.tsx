@@ -15,6 +15,17 @@ const SheetClose = SheetPrimitive.Close
 
 const SheetPortal = SheetPrimitive.Portal
 
+/**
+ * @typedef SheetOverlayProps
+ * @property {string} [className] - Additional class names for styling.
+ */
+
+/**
+ * A component that darkens the background when the sheet is open.
+ * @param {SheetOverlayProps & React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof SheetPrimitive.Overlay>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered sheet overlay.
+ */
 const SheetOverlay = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>
@@ -53,6 +64,12 @@ interface SheetContentProps
   extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
     VariantProps<typeof sheetVariants> {}
 
+/**
+ * A component that contains the content of the sheet.
+ * @param {SheetContentProps} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof SheetPrimitive.Content>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered sheet content.
+ */
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
@@ -74,6 +91,17 @@ const SheetContent = React.forwardRef<
 ))
 SheetContent.displayName = SheetPrimitive.Content.displayName
 
+/**
+ * @typedef SheetHeaderProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the sheet header.
+ */
+
+/**
+ * A component that represents the header of a sheet.
+ * @param {SheetHeaderProps & React.HTMLAttributes<HTMLDivElement>} props - The props for the component.
+ * @returns {JSX.Element} The rendered sheet header.
+ */
 const SheetHeader = ({
   className,
   ...props
@@ -88,6 +116,17 @@ const SheetHeader = ({
 )
 SheetHeader.displayName = "SheetHeader"
 
+/**
+ * @typedef SheetFooterProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the sheet footer.
+ */
+
+/**
+ * A component that represents the footer of a sheet.
+ * @param {SheetFooterProps & React.HTMLAttributes<HTMLDivElement>} props - The props for the component.
+ * @returns {JSX.Element} The rendered sheet footer.
+ */
 const SheetFooter = ({
   className,
   ...props
@@ -102,6 +141,18 @@ const SheetFooter = ({
 )
 SheetFooter.displayName = "SheetFooter"
 
+/**
+ * @typedef SheetTitleProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the sheet title.
+ */
+
+/**
+ * A component that represents the title of a sheet.
+ * @param {SheetTitleProps & React.ComponentPropsWithoutRef<typeof SheetPrimitive.Title>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof SheetPrimitive.Title>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered sheet title.
+ */
 const SheetTitle = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Title>
@@ -114,6 +165,18 @@ const SheetTitle = React.forwardRef<
 ))
 SheetTitle.displayName = SheetPrimitive.Title.displayName
 
+/**
+ * @typedef SheetDescriptionProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {React.ReactNode} children - The content of the sheet description.
+ */
+
+/**
+ * A component that represents the description of a sheet.
+ * @param {SheetDescriptionProps & React.ComponentPropsWithoutRef<typeof SheetPrimitive.Description>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof SheetPrimitive.Description>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered sheet description.
+ */
 const SheetDescription = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Description>

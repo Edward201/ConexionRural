@@ -5,6 +5,12 @@ import { cn } from "@/lib/utils"
 
 const Tabs = TabsPrimitive.Root
 
+/**
+ * A component that displays a list of tabs.
+ * @param {React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof TabsPrimitive.List>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered tabs list.
+ */
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
@@ -20,6 +26,12 @@ const TabsList = React.forwardRef<
 ))
 TabsList.displayName = TabsPrimitive.List.displayName
 
+/**
+ * A component that displays a trigger for a tab.
+ * @param {React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof TabsPrimitive.Trigger>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered tabs trigger.
+ */
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
@@ -35,6 +47,12 @@ const TabsTrigger = React.forwardRef<
 ))
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
 
+/**
+ * A component that displays the content of a tab.
+ * @param {React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof TabsPrimitive.Content>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered tabs content.
+ */
 const TabsContent = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>

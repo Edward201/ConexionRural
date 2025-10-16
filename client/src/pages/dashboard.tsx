@@ -16,13 +16,17 @@ interface DashboardStats {
   regularUsers: number;
 }
 
+/**
+ * A page that displays the admin dashboard.
+ * @returns {JSX.Element} The rendered dashboard page.
+ */
 export default function DashboardPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [currentUser, setCurrentUser] = useState<SafeUser | null>(null);
 
-  // Verificar autenticación
+  // Verify authentication
   const { data: authData, isLoading: authLoading } = useQuery({
     queryKey: ["auth"],
     queryFn: async () => {
@@ -31,7 +35,7 @@ export default function DashboardPage() {
       });
 
       if (!response.ok) {
-        throw new Error("No autenticado");
+        throw new Error("Not authenticated");
       }
 
       return response.json();
@@ -47,15 +51,15 @@ export default function DashboardPage() {
       if (authData.user.role !== "admin") {
         toast({
           variant: "destructive",
-          title: "Acceso denegado",
-          description: "Solo administradores pueden acceder al dashboard",
+          title: "Access denied",
+          description: "Only administrators can access the dashboard",
         });
         setLocation("/");
       }
     }
   }, [authData, authLoading, setLocation]);
 
-  // Obtener estadísticas
+  // Get statistics
   const { data: statsData } = useQuery({
     queryKey: ["stats"],
     queryFn: async () => {
@@ -63,13 +67,13 @@ export default function DashboardPage() {
         credentials: "include",
       });
 
-      if (!response.ok) throw new Error("Error al obtener estadísticas");
+      if (!response.ok) throw new Error("Error getting statistics");
       return response.json();
     },
     enabled: !!authData,
   });
 
-  // Obtener usuarios
+  // Get users
   const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
@@ -77,13 +81,13 @@ export default function DashboardPage() {
         credentials: "include",
       });
 
-      if (!response.ok) throw new Error("Error al obtener usuarios");
+      if (!response.ok) throw new Error("Error getting users");
       return response.json();
     },
     enabled: !!authData,
   });
 
-  // Mutation para actualizar usuario
+  // Mutation to update a user
   const updateUserMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<SafeUser> }) => {
       const response = await fetch(`/api/dashboard/users/${id}`, {
@@ -93,15 +97,15 @@ export default function DashboardPage() {
         credentials: "include",
       });
 
-      if (!response.ok) throw new Error("Error al actualizar usuario");
+      if (!response.ok) throw new Error("Error updating user");
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["stats"] });
       toast({
-        title: "Usuario actualizado",
-        description: "Los cambios se guardaron correctamente",
+        title: "User updated",
+        description: "The changes were saved correctly",
       });
     },
     onError: (error: Error) => {
@@ -113,7 +117,7 @@ export default function DashboardPage() {
     },
   });
 
-  // Cerrar sesión
+  // Log out
   const logoutMutation = useMutation({
     mutationFn: async () => {
       const response = await fetch("/api/auth/logout", {
@@ -121,13 +125,13 @@ export default function DashboardPage() {
         credentials: "include",
       });
 
-      if (!response.ok) throw new Error("Error al cerrar sesión");
+      if (!response.ok) throw new Error("Error logging out");
       return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Sesión cerrada",
-        description: "Has cerrado sesión exitosamente",
+        title: "Logged out",
+        description: "You have been logged out successfully",
       });
       setLocation("/login");
     },
@@ -142,6 +146,10 @@ export default function DashboardPage() {
 
   const users: SafeUser[] = usersData?.users || [];
 
+  /**
+   * Toggles the active state of a user.
+   * @param {SafeUser} user - The user to toggle.
+   */
   const toggleUserActive = (user: SafeUser) => {
     updateUserMutation.mutate({
       id: user.id,
@@ -152,7 +160,7 @@ export default function DashboardPage() {
   if (authLoading || !currentUser) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-lg">Cargando...</p>
+        <p className="text-lg">Loading...</p>
       </div>
     );
   }
@@ -163,78 +171,78 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Dashboard Administrativo</h1>
+            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
             <p className="text-gray-600 mt-1">
-              Bienvenido, <span className="font-medium">{currentUser.username}</span>
+              Welcome, <span className="font-medium">{currentUser.username}</span>
             </p>
           </div>
           <div className="flex gap-2">
             <Button onClick={() => setLocation("/content")}>
-              Gestionar Contenido
+              Manage Content
             </Button>
             <Button onClick={() => setLocation("/analytics")}>
-              Ver Analytics
+              View Analytics
             </Button>
             <Button variant="outline" onClick={() => logoutMutation.mutate()}>
-              Cerrar Sesión
+              Log Out
             </Button>
           </div>
         </div>
 
-        {/* Estadísticas */}
+        {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardDescription>Total Usuarios</CardDescription>
+              <CardDescription>Total Users</CardDescription>
               <CardTitle className="text-3xl">{stats.totalUsers}</CardTitle>
             </CardHeader>
           </Card>
 
           <Card>
             <CardHeader className="pb-3">
-              <CardDescription>Usuarios Activos</CardDescription>
+              <CardDescription>Active Users</CardDescription>
               <CardTitle className="text-3xl text-green-600">{stats.activeUsers}</CardTitle>
             </CardHeader>
           </Card>
 
           <Card>
             <CardHeader className="pb-3">
-              <CardDescription>Administradores</CardDescription>
+              <CardDescription>Administrators</CardDescription>
               <CardTitle className="text-3xl text-blue-600">{stats.adminUsers}</CardTitle>
             </CardHeader>
           </Card>
 
           <Card>
             <CardHeader className="pb-3">
-              <CardDescription>Usuarios Regulares</CardDescription>
+              <CardDescription>Regular Users</CardDescription>
               <CardTitle className="text-3xl text-purple-600">{stats.regularUsers}</CardTitle>
             </CardHeader>
           </Card>
         </div>
 
-        {/* Tabla de Usuarios */}
+        {/* Users Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Gestión de Usuarios</CardTitle>
+            <CardTitle>User Management</CardTitle>
             <CardDescription>
-              Lista completa de usuarios registrados en el sistema
+              Complete list of users registered in the system
             </CardDescription>
           </CardHeader>
           <CardContent>
             {usersLoading ? (
-              <p>Cargando usuarios...</p>
+              <p>Loading users...</p>
             ) : (
               <div className="rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>ID</TableHead>
-                      <TableHead>Usuario</TableHead>
+                      <TableHead>User</TableHead>
                       <TableHead>Email</TableHead>
-                      <TableHead>Rol</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead>Fecha Registro</TableHead>
-                      <TableHead>Acciones</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Registration Date</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -245,12 +253,12 @@ export default function DashboardPage() {
                         <TableCell>{user.email}</TableCell>
                         <TableCell>
                           <Badge variant={user.role === "admin" ? "default" : "secondary"}>
-                            {user.role === "admin" ? "Admin" : "Usuario"}
+                            {user.role === "admin" ? "Admin" : "User"}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <Badge variant={user.isActive ? "default" : "destructive"}>
-                            {user.isActive ? "Activo" : "Inactivo"}
+                            {user.isActive ? "Active" : "Inactive"}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -264,7 +272,7 @@ export default function DashboardPage() {
                               disabled={user.id === currentUser.id}
                             />
                             <span className="text-xs text-gray-500">
-                              {user.id === currentUser.id ? "(Tú)" : ""}
+                              {user.id === currentUser.id ? "(You)" : ""}
                             </span>
                           </div>
                         </TableCell>

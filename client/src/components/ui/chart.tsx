@@ -24,6 +24,10 @@ type ChartContextProps = {
 
 const ChartContext = React.createContext<ChartContextProps | null>(null)
 
+/**
+ * A hook to access the chart context.
+ * @returns {ChartContextProps} The chart context.
+ */
 function useChart() {
   const context = React.useContext(ChartContext)
 
@@ -34,6 +38,19 @@ function useChart() {
   return context
 }
 
+/**
+ * @typedef ChartContainerProps
+ * @property {ChartConfig} config - The configuration for the chart.
+ * @property {React.ReactNode} children - The content of the chart.
+ * @property {string} [className] - Additional class names for styling.
+ */
+
+/**
+ * A container for charts that provides a context for chart components.
+ * @param {ChartContainerProps & React.ComponentProps<"div">} props - The props for the component.
+ * @param {React.Ref<HTMLDivElement>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered chart container.
+ */
 const ChartContainer = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
@@ -102,6 +119,22 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip
 
+/**
+ * @typedef ChartTooltipContentProps
+ * @property {boolean} [hideLabel] - Whether to hide the label in the tooltip.
+ * @property {boolean} [hideIndicator] - Whether to hide the indicator in the tooltip.
+ * @property {"line" | "dot" | "dashed"} [indicator] - The type of indicator to display.
+ * @property {string} [nameKey] - The key to use for the name of the data.
+ * @property {string} [labelKey] - The key to use for the label of the data.
+ * @property {string} [className] - Additional class names for styling.
+ */
+
+/**
+ * A component that displays the content of a chart tooltip.
+ * @param {ChartTooltipContentProps & React.ComponentProps<typeof RechartsPrimitive.Tooltip> & React.ComponentProps<"div">} props - The props for the component.
+ * @param {React.Ref<HTMLDivElement>} ref - The ref for the component.
+ * @returns {JSX.Element | null} The rendered tooltip content.
+ */
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
@@ -258,6 +291,21 @@ ChartTooltipContent.displayName = "ChartTooltip"
 
 const ChartLegend = RechartsPrimitive.Legend
 
+/**
+ * @typedef ChartLegendContentProps
+ * @property {boolean} [hideIcon] - Whether to hide the icon in the legend.
+ * @property {string} [nameKey] - The key to use for the name of the data.
+ * @property {string} [className] - Additional class names for styling.
+ * @property {Array} payload - The payload for the legend.
+ * @property {"top" | "bottom"} [verticalAlign] - The vertical alignment of the legend.
+ */
+
+/**
+ * A component that displays the content of a chart legend.
+ * @param {ChartLegendContentProps & React.ComponentProps<"div">} props - The props for the component.
+ * @param {React.Ref<HTMLDivElement>} ref - The ref for the component.
+ * @returns {JSX.Element | null} The rendered legend content.
+ */
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> &
@@ -316,7 +364,13 @@ const ChartLegendContent = React.forwardRef<
 )
 ChartLegendContent.displayName = "ChartLegend"
 
-// Helper to extract item config from a payload.
+/**
+ * A helper function to extract item configuration from a payload.
+ * @param {ChartConfig} config - The chart configuration.
+ * @param {unknown} payload - The payload from the chart.
+ * @param {string} key - The key to extract from the payload.
+ * @returns {object | undefined} The configuration for the item.
+ */
 function getPayloadConfigFromPayload(
   config: ChartConfig,
   payload: unknown,

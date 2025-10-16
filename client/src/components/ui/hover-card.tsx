@@ -9,6 +9,20 @@ const HoverCard = HoverCardPrimitive.Root
 
 const HoverCardTrigger = HoverCardPrimitive.Trigger
 
+/**
+ * @typedef HoverCardContentProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {"center" | "start" | "end"} [align] - The alignment of the content.
+ * @property {number} [sideOffset] - The offset of the content from the trigger.
+ * @property {React.ReactNode} children - The content of the hover card.
+ */
+
+/**
+ * A component that displays a pop-up card when the user hovers over an element.
+ * @param {HoverCardContentProps & React.ComponentPropsWithoutRef<typeof HoverCardPrimitive.Content>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof HoverCardPrimitive.Content>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered hover card content.
+ */
 const HoverCardContent = React.forwardRef<
   React.ElementRef<typeof HoverCardPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof HoverCardPrimitive.Content>

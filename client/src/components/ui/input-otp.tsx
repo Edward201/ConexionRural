@@ -4,6 +4,18 @@ import { Dot } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * @typedef InputOTPProps
+ * @property {string} [className] - Additional class names for styling.
+ * @property {string} [containerClassName] - Additional class names for the container.
+ */
+
+/**
+ * A component for inputting one-time passwords.
+ * @param {InputOTPProps & React.ComponentPropsWithoutRef<typeof OTPInput>} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<typeof OTPInput>>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered input OTP component.
+ */
 const InputOTP = React.forwardRef<
   React.ElementRef<typeof OTPInput>,
   React.ComponentPropsWithoutRef<typeof OTPInput>
@@ -20,6 +32,17 @@ const InputOTP = React.forwardRef<
 ))
 InputOTP.displayName = "InputOTP"
 
+/**
+ * @typedef InputOTPGroupProps
+ * @property {string} [className] - Additional class names for styling.
+ */
+
+/**
+ * A component that groups the slots of an input OTP component.
+ * @param {InputOTPGroupProps & React.ComponentPropsWithoutRef<"div">} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<"div">>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered input OTP group component.
+ */
 const InputOTPGroup = React.forwardRef<
   React.ElementRef<"div">,
   React.ComponentPropsWithoutRef<"div">
@@ -28,6 +51,18 @@ const InputOTPGroup = React.forwardRef<
 ))
 InputOTPGroup.displayName = "InputOTPGroup"
 
+/**
+ * @typedef InputOTPSlotProps
+ * @property {number} index - The index of the slot.
+ * @property {string} [className] - Additional class names for styling.
+ */
+
+/**
+ * A component that represents a single slot of an input OTP component.
+ * @param {InputOTPSlotProps & React.ComponentPropsWithoutRef<"div">} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<"div">>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered input OTP slot component.
+ */
 const InputOTPSlot = React.forwardRef<
   React.ElementRef<"div">,
   React.ComponentPropsWithoutRef<"div"> & { index: number }
@@ -56,6 +91,12 @@ const InputOTPSlot = React.forwardRef<
 })
 InputOTPSlot.displayName = "InputOTPSlot"
 
+/**
+ * A component that separates groups of slots in an input OTP component.
+ * @param {React.ComponentPropsWithoutRef<"div">} props - The props for the component.
+ * @param {React.Ref<React.ElementRef<"div">>} ref - The ref for the component.
+ * @returns {JSX.Element} The rendered input OTP separator component.
+ */
 const InputOTPSeparator = React.forwardRef<
   React.ElementRef<"div">,
   React.ComponentPropsWithoutRef<"div">

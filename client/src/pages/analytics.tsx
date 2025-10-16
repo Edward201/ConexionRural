@@ -28,13 +28,17 @@ interface AnalyticsOverview {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
+/**
+ * A page that displays analytics.
+ * @returns {JSX.Element} The rendered analytics page.
+ */
 export default function AnalyticsPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [timeRange, setTimeRange] = useState("30");
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  // Verificar autenticación
+  // Verify authentication
   const { data: authData, isLoading: authLoading } = useQuery({
     queryKey: ["auth"],
     queryFn: async () => {
@@ -42,7 +46,7 @@ export default function AnalyticsPage() {
         credentials: "include",
       });
 
-      if (!response.ok) throw new Error("No autenticado");
+      if (!response.ok) throw new Error("Not authenticated");
       return response.json();
     },
     retry: false,
@@ -56,22 +60,22 @@ export default function AnalyticsPage() {
       if (authData.user.role !== "admin") {
         toast({
           variant: "destructive",
-          title: "Acceso denegado",
-          description: "Solo administradores pueden acceder a analytics",
+          title: "Access denied",
+          description: "Only administrators can access analytics",
         });
         setLocation("/");
       }
     }
   }, [authData, authLoading, setLocation]);
 
-  // Obtener datos de analytics
+  // Get analytics data
   const { data: overviewData } = useQuery({
     queryKey: ["analytics-overview", timeRange],
     queryFn: async () => {
       const response = await fetch(`/api/analytics/overview?days=${timeRange}`, {
         credentials: "include",
       });
-      if (!response.ok) throw new Error("Error al obtener overview");
+      if (!response.ok) throw new Error("Error getting overview");
       return response.json();
     },
     enabled: !!authData,
@@ -83,7 +87,7 @@ export default function AnalyticsPage() {
       const response = await fetch(`/api/analytics/sources?days=${timeRange}`, {
         credentials: "include",
       });
-      if (!response.ok) throw new Error("Error al obtener fuentes");
+      if (!response.ok) throw new Error("Error getting sources");
       return response.json();
     },
     enabled: !!authData,
@@ -95,7 +99,7 @@ export default function AnalyticsPage() {
       const response = await fetch(`/api/analytics/pages?days=${timeRange}`, {
         credentials: "include",
       });
-      if (!response.ok) throw new Error("Error al obtener páginas");
+      if (!response.ok) throw new Error("Error getting pages");
       return response.json();
     },
     enabled: !!authData,
@@ -107,7 +111,7 @@ export default function AnalyticsPage() {
       const response = await fetch(`/api/analytics/devices?days=${timeRange}`, {
         credentials: "include",
       });
-      if (!response.ok) throw new Error("Error al obtener dispositivos");
+      if (!response.ok) throw new Error("Error getting devices");
       return response.json();
     },
     enabled: !!authData,
@@ -119,7 +123,7 @@ export default function AnalyticsPage() {
       const response = await fetch(`/api/analytics/conversions?days=${timeRange}`, {
         credentials: "include",
       });
-      if (!response.ok) throw new Error("Error al obtener conversiones");
+      if (!response.ok) throw new Error("Error getting conversions");
       return response.json();
     },
     enabled: !!authData,
@@ -131,7 +135,7 @@ export default function AnalyticsPage() {
       const response = await fetch(`/api/analytics/timeline?days=${timeRange}`, {
         credentials: "include",
       });
-      if (!response.ok) throw new Error("Error al obtener timeline");
+      if (!response.ok) throw new Error("Error getting timeline");
       return response.json();
     },
     enabled: !!authData,
@@ -140,7 +144,7 @@ export default function AnalyticsPage() {
   if (authLoading || !currentUser) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-lg">Cargando analytics...</p>
+        <p className="text-lg">Loading analytics...</p>
       </div>
     );
   }
@@ -154,7 +158,7 @@ export default function AnalyticsPage() {
     conversions: 0,
   };
 
-  // Preparar datos para gráficos
+  // Prepare data for charts
   const deviceChartData = devicesData?.devices.reduce((acc: any[], device: any) => {
     const existing = acc.find(d => d.name === device.deviceType);
     if (existing) {
@@ -166,8 +170,8 @@ export default function AnalyticsPage() {
   }, []) || [];
 
   const userTypeData = [
-    { name: "Nuevos", value: overview.newUsers },
-    { name: "Recurrentes", value: overview.returningUsers },
+    { name: "New", value: overview.newUsers },
+    { name: "Returning", value: overview.returningUsers },
   ];
 
   const formatTime = (seconds: number) => {
@@ -183,37 +187,37 @@ export default function AnalyticsPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Web Analytics</h1>
-            <p className="text-gray-600 mt-1">Panel de métricas y estadísticas del sitio</p>
+            <p className="text-gray-600 mt-1">Site metrics and statistics panel</p>
           </div>
           <div className="flex gap-4 items-center">
             <Select value={timeRange} onValueChange={setTimeRange}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Período" />
+                <SelectValue placeholder="Period" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="7">Últimos 7 días</SelectItem>
-                <SelectItem value="30">Últimos 30 días</SelectItem>
-                <SelectItem value="90">Últimos 90 días</SelectItem>
+                <SelectItem value="7">Last 7 days</SelectItem>
+                <SelectItem value="30">Last 30 days</SelectItem>
+                <SelectItem value="90">Last 90 days</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" onClick={() => setLocation("/dashboard")}>
-              Volver al Dashboard
+              Back to Dashboard
             </Button>
           </div>
         </div>
 
-        {/* Tarjetas de métricas principales */}
+        {/* Main metric cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Eye className="h-4 w-4 text-blue-600" />
-                Visitas Totales
+                Total Visits
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{overview.totalVisits.toLocaleString()}</div>
-              <p className="text-xs text-gray-500 mt-1">En los últimos {timeRange} días</p>
+              <p className="text-xs text-gray-500 mt-1">In the last {timeRange} days</p>
             </CardContent>
           </Card>
 
@@ -221,13 +225,13 @@ export default function AnalyticsPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Users className="h-4 w-4 text-green-600" />
-                Usuarios Nuevos
+                New Users
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-green-600">{overview.newUsers.toLocaleString()}</div>
               <p className="text-xs text-gray-500 mt-1">
-                {overview.returningUsers.toLocaleString()} recurrentes
+                {overview.returningUsers.toLocaleString()} returning
               </p>
             </CardContent>
           </Card>
@@ -236,12 +240,12 @@ export default function AnalyticsPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Clock className="h-4 w-4 text-purple-600" />
-                Tiempo Promedio
+                Average Time
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-purple-600">{formatTime(overview.avgTimeOnPage)}</div>
-              <p className="text-xs text-gray-500 mt-1">Por visita</p>
+              <p className="text-xs text-gray-500 mt-1">Per visit</p>
             </CardContent>
           </Card>
 
@@ -249,13 +253,13 @@ export default function AnalyticsPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <MousePointerClick className="h-4 w-4 text-orange-600" />
-                Tasa de Rebote
+                Bounce Rate
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-orange-600">{overview.bounceRate}%</div>
               <p className="text-xs text-gray-500 mt-1">
-                {overview.bounceRate < 40 ? "Excelente" : overview.bounceRate < 60 ? "Buena" : "Mejorable"}
+                {overview.bounceRate < 40 ? "Excellent" : overview.bounceRate < 60 ? "Good" : "Improvable"}
               </p>
             </CardContent>
           </Card>
@@ -264,7 +268,7 @@ export default function AnalyticsPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Target className="h-4 w-4 text-red-600" />
-                Conversiones
+                Conversions
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -272,7 +276,7 @@ export default function AnalyticsPage() {
               <p className="text-xs text-gray-500 mt-1">
                 {overview.totalVisits > 0 
                   ? `${((overview.conversions / overview.totalVisits) * 100).toFixed(2)}%`
-                  : "0%"} tasa de conversión
+                  : "0%"} conversion rate
               </p>
             </CardContent>
           </Card>
@@ -281,34 +285,34 @@ export default function AnalyticsPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-indigo-600" />
-                Promedio Diario
+                Daily Average
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-indigo-600">
                 {Math.round(overview.totalVisits / Number(timeRange)).toLocaleString()}
               </div>
-              <p className="text-xs text-gray-500 mt-1">Visitas por día</p>
+              <p className="text-xs text-gray-500 mt-1">Visits per day</p>
             </CardContent>
           </Card>
         </div>
 
         <Tabs defaultValue="traffic" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="traffic">Tráfico</TabsTrigger>
-            <TabsTrigger value="pages">Páginas</TabsTrigger>
-            <TabsTrigger value="devices">Dispositivos</TabsTrigger>
-            <TabsTrigger value="conversions">Conversiones</TabsTrigger>
+            <TabsTrigger value="traffic">Traffic</TabsTrigger>
+            <TabsTrigger value="pages">Pages</TabsTrigger>
+            <TabsTrigger value="devices">Devices</TabsTrigger>
+            <TabsTrigger value="conversions">Conversions</TabsTrigger>
           </TabsList>
 
-          {/* Tab: Tráfico */}
+          {/* Tab: Traffic */}
           <TabsContent value="traffic" className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Gráfico de Timeline */}
+              {/* Timeline Chart */}
               <Card className="col-span-2">
                 <CardHeader>
-                  <CardTitle>Visitas en el Tiempo</CardTitle>
-                  <CardDescription>Evolución diaria de visitas y conversiones</CardDescription>
+                  <CardTitle>Visits Over Time</CardTitle>
+                  <CardDescription>Daily evolution of visits and conversions</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
@@ -318,19 +322,19 @@ export default function AnalyticsPage() {
                       <YAxis />
                       <Tooltip />
                       <Legend />
-                      <Line type="monotone" dataKey="visits" stroke="#0088FE" name="Visitas" />
-                      <Line type="monotone" dataKey="newUsers" stroke="#00C49F" name="Nuevos Usuarios" />
-                      <Line type="monotone" dataKey="conversions" stroke="#FF8042" name="Conversiones" />
+                      <Line type="monotone" dataKey="visits" stroke="#0088FE" name="Visits" />
+                      <Line type="monotone" dataKey="newUsers" stroke="#00C49F" name="New Users" />
+                      <Line type="monotone" dataKey="conversions" stroke="#FF8042" name="Conversions" />
                     </LineChart>
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
 
-              {/* Fuentes de Tráfico */}
+              {/* Traffic Sources */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Fuentes de Tráfico</CardTitle>
-                  <CardDescription>De dónde vienen tus visitantes</CardDescription>
+                  <CardTitle>Traffic Sources</CardTitle>
+                  <CardDescription>Where your visitors come from</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -345,18 +349,18 @@ export default function AnalyticsPage() {
                             )}
                           </div>
                         </div>
-                        <Badge variant="secondary">{source.visits} visitas</Badge>
+                        <Badge variant="secondary">{source.visits} visits</Badge>
                       </div>
                     ))}
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Usuarios Nuevos vs Recurrentes */}
+              {/* New vs Returning Users */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Tipo de Usuario</CardTitle>
-                  <CardDescription>Nuevos vs Recurrentes</CardDescription>
+                  <CardTitle>User Type</CardTitle>
+                  <CardDescription>New vs Returning</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={200}>
@@ -383,20 +387,20 @@ export default function AnalyticsPage() {
             </div>
           </TabsContent>
 
-          {/* Tab: Páginas */}
+          {/* Tab: Pages */}
           <TabsContent value="pages">
             <Card>
               <CardHeader>
-                <CardTitle>Páginas Más Visitadas</CardTitle>
-                <CardDescription>Top 10 páginas con más tráfico</CardDescription>
+                <CardTitle>Most Visited Pages</CardTitle>
+                <CardDescription>Top 10 pages with the most traffic</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Página</TableHead>
-                      <TableHead>Visitas</TableHead>
-                      <TableHead>Tiempo Promedio</TableHead>
+                      <TableHead>Page</TableHead>
+                      <TableHead>Visits</TableHead>
+                      <TableHead>Average Time</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -420,13 +424,13 @@ export default function AnalyticsPage() {
             </Card>
           </TabsContent>
 
-          {/* Tab: Dispositivos */}
+          {/* Tab: Devices */}
           <TabsContent value="devices" className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Dispositivos</CardTitle>
-                  <CardDescription>Distribución por tipo de dispositivo</CardDescription>
+                  <CardTitle>Devices</CardTitle>
+                  <CardDescription>Distribution by device type</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={250}>
@@ -453,8 +457,8 @@ export default function AnalyticsPage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Detalles de Dispositivos</CardTitle>
-                  <CardDescription>Navegadores y sistemas operativos</CardDescription>
+                  <CardTitle>Device Details</CardTitle>
+                  <CardDescription>Browsers and operating systems</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -486,12 +490,12 @@ export default function AnalyticsPage() {
             </div>
           </TabsContent>
 
-          {/* Tab: Conversiones */}
+          {/* Tab: Conversions */}
           <TabsContent value="conversions">
             <Card>
               <CardHeader>
-                <CardTitle>Conversiones por Tipo</CardTitle>
-                <CardDescription>Objetivos alcanzados en el período</CardDescription>
+                <CardTitle>Conversions by Type</CardTitle>
+                <CardDescription>Goals reached in the period</CardDescription>
               </CardHeader>
               <CardContent>
                 {conversionsData?.conversions.length > 0 ? (
@@ -503,16 +507,16 @@ export default function AnalyticsPage() {
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Bar dataKey="count" fill="#0088FE" name="Cantidad" />
+                        <Bar dataKey="count" fill="#0088FE" name="Count" />
                       </BarChart>
                     </ResponsiveContainer>
 
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Tipo</TableHead>
-                          <TableHead>Cantidad</TableHead>
-                          <TableHead>Valor Total</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Count</TableHead>
+                          <TableHead>Total Value</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -537,7 +541,7 @@ export default function AnalyticsPage() {
                 ) : (
                   <div className="text-center py-12 text-gray-500">
                     <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No hay conversiones registradas en este período</p>
+                    <p>No conversions registered in this period</p>
                   </div>
                 )}
               </CardContent>
