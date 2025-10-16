@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test API CMS</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        pre { background: #f4f4f4; padding: 10px; border-radius: 4px; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Test API CMS Content</h1>
+    
+    <div>
+        <button onclick="testAuth()">1. Test Auth (/api/auth/me)</button>
+        <button onclick="testCMSContent()">2. Test CMS Content (/api/cms/content)</button>
+        <button onclick="testPublicContent()">3. Test Public Content (/api/content)</button>
+    </div>
+    
+    <h3>Resultado:</h3>
+    <div id="result"></div>
+    
+    <script>
+        async function testAuth() {
+            const result = document.getElementById('result');
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                result.innerHTML = `
+                    <div class="${response.ok ? 'success' : 'error'}">
+                        <strong>Status:</strong> ${response.status}<br>
+                        <strong>Response:</strong>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testCMSContent() {
+            const result = document.getElementById('result');
+            try {
+                const response = await fetch('/api/cms/content', {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                result.innerHTML = `
+                    <div class="${response.ok ? 'success' : 'error'}">
+                        <strong>Status:</strong> ${response.status}<br>
+                        <strong>Secciones encontradas:</strong> ${data.contents ? data.contents.length : 0}<br>
+                        <strong>Response:</strong>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testPublicContent() {
+            const result = document.getElementById('result');
+            try {
+                const response = await fetch('/api/content');
+                
+                const data = await response.json();
+                
+                result.innerHTML = `
+                    <div class="${response.ok ? 'success' : 'error'}">
+                        <strong>Status:</strong> ${response.status}<br>
+                        <strong>Secciones encontradas:</strong> ${data.contents ? data.contents.length : 0}<br>
+                        <strong>Response:</strong>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
+
+

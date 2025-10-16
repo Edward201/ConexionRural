@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conexión Rural 360°</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rural-green-light': '#a8e063',
+                        'rural-green-dark': '#56ab2f',
+                        'rural-green-hover': '#007b5e'
+                    },
+                    fontFamily: {
+                        'system': ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        .hero-gradient {
+            background: linear-gradient(to right, #a8e063, #56ab2f);
+        }
+    </style>
+</head>
+<body class="font-system bg-gray-50 text-gray-800 leading-relaxed">
+    
+    <!-- @COMPONENT: Navigation [sticky navbar with smooth scroll links] -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center text-xl font-bold">
+                <span class="text-2xl mr-2">🌱</span>
+                <span data-bind="brandName">Conexión Rural 360°</span>
+            </div>
+            <ul class="hidden md:flex space-x-8">
+                <li><a href="#inicio" class="text-gray-700 font-medium hover:text-rural-green-hover transition-colors duration-300">Inicio</a></li>
+                <li><a href="#proyecto" class="text-gray-700 font-medium hover:text-rural-green-hover transition-colors duration-300">Proyecto</a></li>
+                <li><a href="#fases" class="text-gray-700 font-medium hover:text-rural-green-hover transition-colors duration-300">Fases</a></li>
+                <li><a href="#galeria" class="text-gray-700 font-medium hover:text-rural-green-hover transition-colors duration-300">Galería</a></li>
+                <li><a href="#contacto" class="text-gray-700 font-medium hover:text-rural-green-hover transition-colors duration-300">Contacto</a></li>
+            </ul>
+            <!-- @FUNCTIONALITY: Mobile menu toggle for responsive navigation -->
+            <button class="md:hidden text-2xl" data-event="click:toggleMobileMenu">☰</button>
+        </div>
+    </nav>
+    <!-- @END_COMPONENT: Navigation -->
+
+    <!-- @COMPONENT: Hero [gradient background with CTA] -->
+    <section id="inicio" class="hero-gradient text-white py-24 px-8 text-center">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6" data-bind="heroTitle">Proyecto Conexión Rural 360°</h1>
+            <p class="text-xl md:text-2xl mb-8 opacity-95" data-bind="heroSubtitle">Transformando comunidades rurales a través de la tecnología, educación y desarrollo sostenible</p>
+            <div class="mt-8">
+                <a href="#proyecto" class="inline-block bg-white text-rural-green-dark px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors duration-300" data-event="click:scrollToProject">Conocer más</a>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Hero -->
+
+    <!-- @COMPONENT: About [project description with feature cards] -->
+    <section id="proyecto" class="py-16 px-8">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12" data-bind="aboutTitle">Sobre el Proyecto</h2>
+            <div class="grid lg:grid-cols-2 gap-12 items-start">
+                <div class="space-y-6">
+                    <!-- Rural community meeting with digital devices -->
+                    <img src="https://images.unsplash.com/photo-1573164713988-8665fc963095?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" alt="Rural community meeting" class="rounded-xl shadow-lg w-full h-64 object-cover" data-mock-image="true" />
+                    <div class="prose prose-lg">
+                        <p class="text-lg leading-relaxed" data-bind="aboutText1">Conexión Rural 360° es una iniciativa integral que busca cerrar la brecha digital en las comunidades rurales de Colombia.</p>
+                        <p class="text-lg leading-relaxed" data-bind="aboutText2">Desde la implementación de infraestructura tecnológica hasta la capacitación de líderes comunitarios, nuestro proyecto abarca todas las dimensiones del desarrollo rural sostenible.</p>
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <!-- @MAP: features.map(feature => ( -->
+                    <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300" data-mock="true">
+                        <h3 class="text-xl font-bold mb-3 flex items-center">
+                            <span class="text-2xl mr-3">🌐</span>
+                            <span data-bind="feature.title">Conectividad Digital</span>
+                        </h3>
+                        <p class="text-gray-600" data-bind="feature.description">Instalación de redes de internet de alta velocidad y puntos de acceso WiFi comunitarios para garantizar conectividad a todos los habitantes.</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300" data-mock="true">
+                        <h3 class="text-xl font-bold mb-3 flex items-center">
+                            <span class="text-2xl mr-3">📚</span>
+                            <span data-bind="feature.title">Educación Integral</span>
+                        </h3>
+                        <p class="text-gray-600" data-bind="feature.description">Programas educativos presenciales y virtuales, incluyendo alfabetización digital y capacitación en nuevas tecnologías.</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300" data-mock="true">
+                        <h3 class="text-xl font-bold mb-3 flex items-center">
+                            <span class="text-2xl mr-3">🌱</span>
+                            <span data-bind="feature.title">Desarrollo Sostenible</span>
+                        </h3>
+                        <p class="text-gray-600" data-bind="feature.description">Iniciativas ambientales y económicas sostenibles que respeten el ecosistema local y generen oportunidades de empleo.</p>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: About -->
+
+    <!-- @COMPONENT: ProjectPhases [timeline of project implementation] -->
+    <section id="fases" class="py-16 px-8 bg-white">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12" data-bind="phasesTitle">Fases del Proyecto</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- @MAP: phases.map(phase => ( -->
+                <div class="text-center group" data-mock="true">
+                    <div class="bg-gradient-to-br from-rural-green-light to-rural-green-dark w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">1</div>
+                    <h3 class="text-xl font-bold mb-3" data-bind="phase.title">Diagnóstico</h3>
+                    <p class="text-gray-600" data-bind="phase.description">Evaluación de necesidades tecnológicas y capacidades locales en cada comunidad participante.</p>
+                </div>
+                
+                <div class="text-center group" data-mock="true">
+                    <div class="bg-gradient-to-br from-rural-green-light to-rural-green-dark w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">2</div>
+                    <h3 class="text-xl font-bold mb-3" data-bind="phase.title">Implementación</h3>
+                    <p class="text-gray-600" data-bind="phase.description">Instalación de infraestructura tecnológica y inicio de programas de capacitación comunitaria.</p>
+                </div>
+                
+                <div class="text-center group" data-mock="true">
+                    <div class="bg-gradient-to-br from-rural-green-light to-rural-green-dark w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">3</div>
+                    <h3 class="text-xl font-bold mb-3" data-bind="phase.title">Sostenibilidad</h3>
+                    <p class="text-gray-600" data-bind="phase.description">Establecimiento de modelos autosostenibles y transferencia de conocimiento a líderes locales.</p>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: ProjectPhases -->
+
+    <!-- @COMPONENT: Gallery [project showcase with images] -->
+    <section id="galeria" class="py-16 px-8">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12" data-bind="galleryTitle">Galería del Proyecto</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- @MAP: galleryItems.map(item => ( -->
+                <div class="group cursor-pointer" data-mock="true">
+                    <!-- Community technology center with computers -->
+                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&h=400" alt="Centro Tecnológico Comunitario" class="w-full h-48 object-cover rounded-xl shadow-lg group-hover:shadow-xl transition-shadow duration-300" data-mock-image="true" />
+                    <div class="bg-green-50 p-6 rounded-b-xl">
+                        <h3 class="text-lg font-bold text-center" data-bind="item.title">Centro Tecnológico</h3>
+                        <p class="text-gray-600 text-center text-sm mt-2" data-bind="item.description">Espacios equipados con tecnología de última generación</p>
+                    </div>
+                </div>
+                
+                <div class="group cursor-pointer" data-mock="true">
+                    <!-- Digital training session in rural setting -->
+                    <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&h=400" alt="Capacitación Digital" class="w-full h-48 object-cover rounded-xl shadow-lg group-hover:shadow-xl transition-shadow duration-300" data-mock-image="true" />
+                    <div class="bg-green-50 p-6 rounded-b-xl">
+                        <h3 class="text-lg font-bold text-center" data-bind="item.title">Capacitación Digital</h3>
+                        <p class="text-gray-600 text-center text-sm mt-2" data-bind="item.description">Programas de formación en competencias digitales</p>
+                    </div>
+                </div>
+                
+                <div class="group cursor-pointer" data-mock="true">
+                    <!-- Rural school with students using tablets -->
+                    <img src="https://images.unsplash.com/photo-1497486751825-1233686d5d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&h=400" alt="Educación Rural" class="w-full h-48 object-cover rounded-xl shadow-lg group-hover:shadow-xl transition-shadow duration-300" data-mock-image="true" />
+                    <div class="bg-green-50 p-6 rounded-b-xl">
+                        <h3 class="text-lg font-bold text-center" data-bind="item.title">Educación Rural</h3>
+                        <p class="text-gray-600 text-center text-sm mt-2" data-bind="item.description">Transformación educativa con tecnología integrada</p>
+                    </div>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Gallery -->
+
+    <!-- @COMPONENT: Contact [contact information and form] -->
+    <section id="contacto" class="py-16 px-8 bg-white">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6" data-bind="contactTitle">Contacto</h2>
+            <p class="text-xl text-gray-600 mb-12" data-bind="contactSubtitle">¿Interesado en ser parte de Conexión Rural 360°? Contáctanos para más información</p>
+            
+            <div class="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+                <!-- @MAP: contactMethods.map(method => ( -->
+                <div class="bg-gray-50 rounded-xl p-8 hover:bg-gray-100 transition-colors duration-300" data-mock="true">
+                    <div class="text-4xl mb-4">📧</div>
+                    <h3 class="text-xl font-bold mb-2" data-bind="method.type">Email</h3>
+                    <p class="text-gray-600" data-bind="method.value">info@conexionrural360.org</p>
+                </div>
+                
+                <div class="bg-gray-50 rounded-xl p-8 hover:bg-gray-100 transition-colors duration-300" data-mock="true">
+                    <div class="text-4xl mb-4">📱</div>
+                    <h3 class="text-xl font-bold mb-2" data-bind="method.type">Teléfono</h3>
+                    <p class="text-gray-600" data-bind="method.value">+57 (1) 234-5678</p>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+
+            <div class="mt-12 bg-gradient-to-r from-rural-green-light to-rural-green-dark rounded-xl p-8 text-white">
+                <h3 class="text-2xl font-bold mb-4">Únete a la Transformación Rural</h3>
+                <p class="mb-6">Sé parte del cambio que las comunidades rurales necesitan. Juntos podemos construir un futuro más conectado y próspero.</p>
+                <button class="bg-white text-rural-green-dark px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors duration-300" data-event="click:openContactForm">
+                    <!-- TODO: Implement contact form modal or redirect to contact form -->
+                    Contáctanos Ahora
+                </button>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Contact -->
+
+    <!-- @COMPONENT: Footer [copyright and additional links] -->
+    <footer class="bg-gray-800 text-white py-8 px-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid md:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center text-xl font-bold mb-4">
+                        <span class="text-2xl mr-2">🌱</span>
+                        <span data-bind="brandName">Conexión Rural 360°</span>
+                    </div>
+                    <p class="text-gray-300" data-bind="footerDescription">Transformando comunidades rurales a través de la tecnología, educación y desarrollo sostenible.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Enlaces Rápidos</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li><a href="#inicio" class="hover:text-white transition-colors">Inicio</a></li>
+                        <li><a href="#proyecto" class="hover:text-white transition-colors">Proyecto</a></li>
+                        <li><a href="#galeria" class="hover:text-white transition-colors">Galería</a></li>
+                        <li><a href="#contacto" class="hover:text-white transition-colors">Contacto</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Síguenos</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-2xl hover:text-rural-green-light transition-colors" data-event="click:openSocialMedia">📘</a>
+                        <a href="#" class="text-2xl hover:text-rural-green-light transition-colors" data-event="click:openSocialMedia">📷</a>
+                        <a href="#" class="text-2xl hover:text-rural-green-light transition-colors" data-event="click:openSocialMedia">🐦</a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 pt-8 text-center text-gray-300">
+                <p data-bind="copyright">&copy; 2025 Conexión Rural 360°. Transformando comunidades, construyendo futuro.</p>
+            </div>
+        </div>
+    </footer>
+    <!-- @END_COMPONENT: Footer -->
+
+    <script>
+        // TODO: Implement smooth scrolling navigation, mobile menu toggle, and form submission handlers
+        (function() {
+            // Enhanced smooth scrolling for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Navbar background opacity on scroll
+            window.addEventListener('scroll', function() {
+                const navbar = document.querySelector('nav');
+                if (window.scrollY > 100) {
+                    navbar.classList.add('bg-opacity-95');
+                } else {
+                    navbar.classList.remove('bg-opacity-95');
+                }
+            });
+
+            // Simple fade-in animation for cards when they come into view
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Apply fade-in effect to feature cards and gallery items
+            document.querySelectorAll('.group, [class*="bg-white"]').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(el);
+            });
+        })();
+    </script>
+</body>
+</html>
