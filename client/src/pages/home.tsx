@@ -30,10 +30,16 @@ export default function Home() {
   const { data: cmsData } = useQuery({
     queryKey: ["page-content"],
     queryFn: async () => {
-      const response = await fetch("/api/content");
+      const response = await fetch("/api/content", {
+        cache: "no-cache", // Forzar recarga sin caché
+      });
       if (!response.ok) throw new Error("Error al cargar contenido");
-      return response.json();
+      const data = await response.json();
+      console.log('🏠 Datos del Home:', data); // Debug
+      return data;
     },
+    staleTime: 0, // Los datos siempre están "stale"
+    cacheTime: 0, // No cachear
   });
 
   const contents: PageContent[] = cmsData?.contents || [];
@@ -212,33 +218,47 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section id="inicio" className="text-white py-24 px-8 text-center relative overflow-hidden">
-        {/* Background Video */}
-        <video 
-          autoPlay 
-          muted 
-          loop 
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        >
-          <source src="/attached_assets/IMG_8988_1754364438033.MP4" type="video/mp4" />
-        </video>
+      {getSection("hero") && (
+        <section id="inicio" className="text-white py-24 px-8 text-center relative overflow-hidden">
+          {/* Background - Imagen o Gradiente */}
+          {getSection("hero")?.backgroundType === "image" && getSection("hero")?.imageUrl ? (
+            <>
+              <div 
+                className="absolute inset-0 w-full h-full bg-cover bg-center"
+                style={{ backgroundImage: `url(${getSection("hero")?.imageUrl})` }}
+              ></div>
+              {/* Image Overlay */}
+              <div className="absolute inset-0 bg-black/40"></div>
+            </>
+          ) : (
+            <>
+              {/* Video de fondo por defecto */}
+              <video 
+                autoPlay 
+                muted 
+                loop 
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover"
+              >
+                <source src="/attached_assets/IMG_8988_1754364438033.MP4" type="video/mp4" />
+              </video>
+              {/* Video Overlay */}
+              <div className="absolute inset-0 bg-black/50"></div>
+            </>
+          )}
 
-        {/* Video Overlay with Gray Filter */}
-        <div className="absolute inset-0 bg-black/50"></div>
+          {/* Orange Gradient Overlay */}
+          <div className="absolute inset-0 hero-gradient opacity-80"></div>
 
-        {/* Orange Gradient Overlay */}
-        <div className="absolute inset-0 hero-gradient opacity-80"></div>
+          {/* Animated Background Elements */}
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute top-20 left-10 w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+            <div className="absolute top-40 right-20 w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute bottom-40 left-1/4 w-4 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '2s' }}></div>
+            <div className="absolute bottom-20 right-1/3 w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '1.5s' }}></div>
+          </div>
 
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-20 left-10 w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-          <div className="absolute top-40 right-20 w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute bottom-40 left-1/4 w-4 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute bottom-20 right-1/3 w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '1.5s' }}></div>
-        </div>
-
-        <div className="max-w-4xl mx-auto relative z-10">
+          <div className="max-w-4xl mx-auto relative z-10">
           <Badge className="mb-6 bg-white/20 text-white border-white/30 hover:bg-white/30 transition-colors duration-300">
             🎓 Investigación Educativa 2025
           </Badge>
@@ -255,58 +275,81 @@ export default function Home() {
 
           {/* Interactive CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-            <Button
-              onClick={() => scrollToSection('proyecto')}
-              className="bg-white text-rural-orange-dark px-8 py-4 rounded-xl font-bold hover:bg-gray-100 hover:scale-105 transition-all duration-300 shadow-lg group"
-            >
-              Conocer más
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
-            </Button>
+            {getSection("hero")?.buttonText && (
+              <Button
+                onClick={() => {
+                  const link = getSection("hero")?.buttonLink || "#proyecto";
+                  if (link.startsWith("#")) {
+                    scrollToSection(link.substring(1));
+                  } else {
+                    window.location.href = link;
+                  }
+                }}
+                className="bg-white text-rural-orange-dark px-8 py-4 rounded-xl font-bold hover:bg-gray-100 hover:scale-105 transition-all duration-300 shadow-lg group"
+              >
+                {getSection("hero")?.buttonText}
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+              </Button>
+            )}
 
-            <Button
-              onClick={() => setVideoPlaying(!videoPlaying)}
-              variant="outline"
-              className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl font-bold hover:bg-white hover:text-rural-orange-dark hover:scale-105 transition-all duration-300 group"
-            >
-              <Play className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
-              Ver Video
-            </Button>
+            {getSection("hero")?.button2Text && (
+              <Button
+                onClick={() => {
+                  const link = getSection("hero")?.button2Link || "#video";
+                  if (link === "#video") {
+                    setVideoPlaying(!videoPlaying);
+                  } else if (link.startsWith("#")) {
+                    scrollToSection(link.substring(1));
+                  } else {
+                    window.location.href = link;
+                  }
+                }}
+                variant="outline"
+                className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl font-bold hover:bg-white hover:text-rural-orange-dark hover:scale-105 transition-all duration-300 group"
+              >
+                <Play className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
+                {getSection("hero")?.button2Text}
+              </Button>
+            )}
           </div>
         </div>
 
         {/* Floating Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-16">
+          {/* Card 1 */}
           <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 hover:scale-105">
             <div className="flex items-center justify-between mb-2">
               <School className="h-8 w-8 text-white" />
               <Badge variant="secondary" className="bg-white/20 text-white">
-                Participantes
+                {getSection("hero")?.card1Label || "Participantes"}
               </Badge>
             </div>
-            <div className="text-3xl font-bold text-white">{stats.schools}</div>
-            <div className="text-white/80 text-sm">Instituciones Educativas</div>
+            <div className="text-3xl font-bold text-white">{getSection("hero")?.card1Number || stats.schools}</div>
+            <div className="text-white/80 text-sm">{getSection("hero")?.card1Description || "Instituciones Educativas"}</div>
           </div>
 
+          {/* Card 2 */}
           <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 hover:scale-105">
             <div className="flex items-center justify-between mb-2">
               <Users className="h-8 w-8 text-white" />
               <Badge variant="secondary" className="bg-white/20 text-white">
-                Beneficiados
+                {getSection("hero")?.card2Label || "Beneficiados"}
               </Badge>
             </div>
-            <div className="text-3xl font-bold text-white">{stats.students}</div>
-            <div className="text-white/80 text-sm">Estudiantes</div>
+            <div className="text-3xl font-bold text-white">{getSection("hero")?.card2Number || stats.students}</div>
+            <div className="text-white/80 text-sm">{getSection("hero")?.card2Description || "Estudiantes"}</div>
           </div>
 
+          {/* Card 3 */}
           <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 hover:scale-105">
             <div className="flex items-center justify-between mb-2">
               <BookOpen className="h-8 w-8 text-white" />
               <Badge variant="secondary" className="bg-white/20 text-white">
-                Temáticas
+                {getSection("hero")?.card3Label || "Temáticas"}
               </Badge>
             </div>
-            <div className="text-3xl font-bold text-white">{stats.themes}</div>
-            <div className="text-white/80 text-sm">Ejes Temáticos</div>
+            <div className="text-3xl font-bold text-white">{getSection("hero")?.card3Number || stats.themes}</div>
+            <div className="text-white/80 text-sm">{getSection("hero")?.card3Description || "Ejes Temáticos"}</div>
           </div>
         </div>
 
@@ -314,11 +357,12 @@ export default function Home() {
         <div className="mt-16 max-w-6xl mx-auto">
           <h3 className="text-2xl font-bold mb-8">Lugares de Investigación</h3>
           <div className="grid md:grid-cols-2 gap-8">
+            {/* Institución 1 */}
             <Card className="bg-white/10 backdrop-blur-sm border border-white/20 p-6 text-left relative overflow-hidden">
               <div className="absolute inset-0 opacity-20">
                 <img 
-                  src={galleryImage3} 
-                  alt="Escuela Rural"
+                  src={getSection("hero")?.inst1Image || galleryImage3} 
+                  alt={getSection("hero")?.inst1Title || "Institución Educativa"}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -326,29 +370,33 @@ export default function Home() {
                 <div className="flex items-start gap-4">
                   <MapPin className="h-6 w-6 text-white flex-shrink-0 mt-1" />
                   <div>
-                    <h4 className="font-bold text-white mb-2">Escuela Rural Multigrado El Volcán</h4>
+                    <h4 className="font-bold text-white mb-2">
+                      {getSection("hero")?.inst1Title || "Escuela Rural Multigrado El Volcán"}
+                    </h4>
                     <p className="text-white/90 text-sm mb-3 drop-shadow-lg">
-                      Pertenece a la IEDRI (Institución Educativa Departamental Rural Integral) Mundo Nuevo. 
-                      Ubicada en el municipio de La Calera, a 30 minutos del caso urbano.
+                      {getSection("hero")?.inst1Description || "Pertenece a la IEDRI (Institución Educativa Departamental Rural Integral) Mundo Nuevo. Ubicada en el municipio de La Calera, a 30 minutos del caso urbano."}
                     </p>
-                    <a href="https://maps.app.goo.gl/Fcsp5Vgh5TwR2jdw9" target="_blank">
-                    <Button 
-                      size="sm" 
-                      className="bg-white/20 border-white/50 text-white hover:bg-white hover:text-rural-orange-dark backdrop-blur-sm font-semibold"
-                    >
-                      Ver ubicación
-                    </Button>
-                    </a>
+                    {getSection("hero")?.inst1Link && (
+                      <a href={getSection("hero")?.inst1Link} target="_blank" rel="noopener noreferrer">
+                        <Button 
+                          size="sm" 
+                          className="bg-white/20 border-white/50 text-white hover:bg-white hover:text-rural-orange-dark backdrop-blur-sm font-semibold"
+                        >
+                          Ver ubicación
+                        </Button>
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
             </Card>
 
+            {/* Institución 2 */}
             <Card className="bg-white/10 backdrop-blur-sm border border-white/20 p-6 text-left relative overflow-hidden">
               <div className="absolute inset-0 opacity-20">
                 <img 
-                  src={galleryImage5} 
-                  alt="Colegio San Andrés"
+                  src={getSection("hero")?.inst2Image || galleryImage5} 
+                  alt={getSection("hero")?.inst2Title || "Institución Educativa"}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -356,25 +404,30 @@ export default function Home() {
                 <div className="flex items-start gap-4">
                   <MapPin className="h-6 w-6 text-white flex-shrink-0 mt-1" />
                   <div>
-                    <h4 className="font-bold text-white mb-2">Colegio Nuevo San Andrés de los Altos</h4>
+                    <h4 className="font-bold text-white mb-2">
+                      {getSection("hero")?.inst2Title || "Colegio Nuevo San Andrés de los Altos"}
+                    </h4>
                     <p className="text-white/90 text-sm mb-3 drop-shadow-lg">
-                      Ubicado en la localidad de Usme – Bogotá.
+                      {getSection("hero")?.inst2Description || "Ubicado en la localidad de Usme – Bogotá."}
                     </p>
-                    <a href="https://maps.app.goo.gl/dkAQDTc6QuLoyvsx8" target="_blank">
-                    <Button 
-                      size="sm" 
-                      className="bg-white/20 border-white/50 text-white hover:bg-white hover:text-rural-orange-dark backdrop-blur-sm font-semibold"
-                    >
-                      Ver ubicación
-                    </Button>
-                    </a>
+                    {getSection("hero")?.inst2Link && (
+                      <a href={getSection("hero")?.inst2Link} target="_blank" rel="noopener noreferrer">
+                        <Button 
+                          size="sm" 
+                          className="bg-white/20 border-white/50 text-white hover:bg-white hover:text-rural-orange-dark backdrop-blur-sm font-semibold"
+                        >
+                          Ver ubicación
+                        </Button>
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
             </Card>
           </div>
         </div>
-      </section>
+        </section>
+      )}
 
       {/* About Section */}
       <section id="proyecto" className="py-16 px-8">
@@ -403,22 +456,30 @@ export default function Home() {
                   "Determinar el impacto de la implementación de esta plataforma educativa en el fortalecimiento de habilidades digitales en comunidades rurales y en el desarrollo de aprendizajes significativos en torno a la Cultura de paz, la Construcción de ciudadanías, los Idiomas y el Pensamiento computacional."}
               </p>
               <div className="mt-6 space-y-3">
-                <div className="flex items-center gap-3">
-                  <Target className="h-5 w-5 text-rural-orange-dark" />
-                  <span className="text-sm">Contenidos territorializados</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Target className="h-5 w-5 text-rural-orange-dark" />
-                  <span className="text-sm">Herramientas de gamificación</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Target className="h-5 w-5 text-rural-orange-dark" />
-                  <span className="text-sm">Capacitaciones para toda la comunidad educativa</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Target className="h-5 w-5 text-rural-orange-dark" />
-                  <span className="text-sm">Adaptado a condiciones rurales de conectividad</span>
-                </div>
+                {getSection("about")?.feature1Text && (
+                  <div className="flex items-center gap-3">
+                    <Target className="h-5 w-5 text-rural-orange-dark" />
+                    <span className="text-sm">{getSection("about")?.feature1Text}</span>
+                  </div>
+                )}
+                {getSection("about")?.feature2Text && (
+                  <div className="flex items-center gap-3">
+                    <Target className="h-5 w-5 text-rural-orange-dark" />
+                    <span className="text-sm">{getSection("about")?.feature2Text}</span>
+                  </div>
+                )}
+                {getSection("about")?.feature3Text && (
+                  <div className="flex items-center gap-3">
+                    <Target className="h-5 w-5 text-rural-orange-dark" />
+                    <span className="text-sm">{getSection("about")?.feature3Text}</span>
+                  </div>
+                )}
+                {getSection("about")?.feature4Text && (
+                  <div className="flex items-center gap-3">
+                    <Target className="h-5 w-5 text-rural-orange-dark" />
+                    <span className="text-sm">{getSection("about")?.feature4Text}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -442,22 +503,28 @@ export default function Home() {
                 <div className="text-center">
                   <div className="w-32 h-32 rounded-full mx-auto mb-6 overflow-hidden border-4 border-rural-orange-light">
                     <img 
-                      src={teresilaImage} 
-                      alt="Teresila Barona Villamizar"
+                      src={getSection("team")?.leadPhoto || teresilaImage} 
+                      alt={getSection("team")?.leadName || "Investigador Principal"}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <h3 className="text-2xl font-bold mb-2">Teresila Barona Villamizar</h3>
-                  <Badge className="mb-4 bg-rural-orange-dark text-white">Investigadora Principal</Badge>
+                  <h3 className="text-2xl font-bold mb-2">
+                    {getSection("team")?.leadName || "Teresila Barona Villamizar"}
+                  </h3>
+                  <Badge className="mb-4 bg-rural-orange-dark text-white">
+                    {getSection("team")?.leadRole || "Investigadora Principal"}
+                  </Badge>
                   <p className="text-gray-600 mb-4">
-                    Socióloga y Doctora en Educación, antioqueña y coordinó el proyecto en el semestre 2025-1.
+                    {getSection("team")?.leadBio || "Socióloga y Doctora en Educación, antioqueña y coordinó el proyecto en el semestre 2025-1."}
                   </p>
-                  <a href="mailto:ltbarona@ucompensar.edu.co">
-                  <Button variant="outline" className="group">
-                    <Mail className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
-                    ltbarona@ucompensar.edu.co
-                  </Button>
-                  </a>
+                  {getSection("team")?.leadEmail && (
+                    <a href={`mailto:${getSection("team")?.leadEmail}`}>
+                      <Button variant="outline" className="group">
+                        <Mail className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
+                        {getSection("team")?.leadEmail}
+                      </Button>
+                    </a>
+                  )}
                 </div>
               </Card>
             </div>
@@ -467,9 +534,11 @@ export default function Home() {
               <div className="w-20 h-20 bg-rural-orange-main/20 rounded-full mx-auto mb-4 flex items-center justify-center">
                 <Users className="h-10 w-10 text-rural-orange-dark" />
               </div>
-              <h4 className="font-bold mb-2">Coinvestigadores</h4>
+              <h4 className="font-bold mb-2">
+                {getSection("team")?.teamCard1Title || "Coinvestigadores"}
+              </h4>
               <p className="text-sm text-gray-600">
-                Equipo multidisciplinario de investigadores especializados
+                {getSection("team")?.teamCard1Description || "Equipo multidisciplinario de investigadores especializados"}
               </p>
             </Card>
 
@@ -477,9 +546,11 @@ export default function Home() {
               <div className="w-20 h-20 bg-rural-orange-light/30 rounded-full mx-auto mb-4 flex items-center justify-center">
                 <BookOpen className="h-10 w-10 text-rural-orange-dark" />
               </div>
-              <h4 className="font-bold mb-2">Pasantes de Investigación</h4>
+              <h4 className="font-bold mb-2">
+                {getSection("team")?.teamCard2Title || "Pasantes de Investigación"}
+              </h4>
               <p className="text-sm text-gray-600">
-                Estudiantes en formación que apoyan el desarrollo del proyecto
+                {getSection("team")?.teamCard2Description || "Estudiantes en formación que apoyan el desarrollo del proyecto"}
               </p>
             </Card>
 
@@ -487,9 +558,11 @@ export default function Home() {
               <div className="w-20 h-20 bg-rural-orange-main/30 rounded-full mx-auto mb-4 flex items-center justify-center">
                 <School className="h-10 w-10 text-rural-orange-dark" />
               </div>
-              <h4 className="font-bold mb-2">Comunidad Educativa</h4>
+              <h4 className="font-bold mb-2">
+                {getSection("team")?.teamCard3Title || "Comunidad Educativa"}
+              </h4>
               <p className="text-sm text-gray-600">
-                Directivos, docentes y estudiantes participantes
+                {getSection("team")?.teamCard3Description || "Directivos, docentes y estudiantes participantes"}
               </p>
             </Card>
           </div>
@@ -513,9 +586,11 @@ export default function Home() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-rural-orange-main rounded-full flex items-center justify-center text-white font-bold text-xl">
-                      1
+                      {getSection("phases")?.phase1Number || 1}
                     </div>
-                    <h3 className="text-2xl font-bold text-rural-orange-dark">CONECTAR</h3>
+                    <h3 className="text-2xl font-bold text-rural-orange-dark">
+                      {getSection("phases")?.phase1Title || "CONECTAR"}
+                    </h3>
                   </div>
                   <ChevronRight 
                     className={`h-6 w-6 transition-transform duration-300 ${
@@ -524,27 +599,29 @@ export default function Home() {
                   />
                 </div>
                 <p className="text-gray-600 ml-16">
-                  Fase inicial de revisión documental, reconocimiento territorial y construcción de talleres.
+                  {getSection("phases")?.phase1Description || "Fase inicial de revisión documental, reconocimiento territorial y construcción de talleres."}
                 </p>
               </div>
 
               {activePhase === 'conectar' && (
                 <div className="ml-16 mt-6 space-y-4 animate-fade-in">
                   <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h4 className="font-semibold">Revisión documental</h4>
-                      <p className="text-sm text-gray-600">
-                        Estudio teórico de antecedentes y para consolidar el marco categorial: Bilingüismo, 
-                        Pensamiento computacional, Formación de ciudadanías y Educación para la paz.
-                      </p>
-                    </div>
-                    <div className="space-y-4">
-                      <h4 className="font-semibold">Reconocimiento territorial</h4>
-                      <p className="text-sm text-gray-600">
-                        Visita a las Instituciones Educativas para identificar dinámicas, presentación del equipo 
-                        a directivos y docentes, presentación de la investigación y llegar a acuerdos metodológicos.
-                      </p>
-                    </div>
+                    {getSection("phases")?.phase1Sub1Title && (
+                      <div className="space-y-4">
+                        <h4 className="font-semibold">{getSection("phases")?.phase1Sub1Title}</h4>
+                        <p className="text-sm text-gray-600">
+                          {getSection("phases")?.phase1Sub1Description}
+                        </p>
+                      </div>
+                    )}
+                    {getSection("phases")?.phase1Sub2Title && (
+                      <div className="space-y-4">
+                        <h4 className="font-semibold">{getSection("phases")?.phase1Sub2Title}</h4>
+                        <p className="text-sm text-gray-600">
+                          {getSection("phases")?.phase1Sub2Description}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -559,9 +636,11 @@ export default function Home() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-rural-orange-main rounded-full flex items-center justify-center text-white font-bold text-xl">
-                      2
+                      {getSection("phases")?.phase2Number || 2}
                     </div>
-                    <h3 className="text-2xl font-bold text-rural-orange-dark">CONSTRUIR - LA CALERA</h3>
+                    <h3 className="text-2xl font-bold text-rural-orange-dark">
+                      {getSection("phases")?.phase2Title || "CONSTRUIR - LA CALERA"}
+                    </h3>
                   </div>
                   <ChevronRight 
                     className={`h-6 w-6 transition-transform duration-300 ${
@@ -570,50 +649,62 @@ export default function Home() {
                   />
                 </div>
                 <p className="text-gray-600 ml-16">
-                  Implementación de talleres, levantamiento de requerimientos y desarrollo de contenidos contextualizados.
+                  {getSection("phases")?.phase2Description || "Implementación de talleres, levantamiento de requerimientos y desarrollo de contenidos contextualizados."}
                 </p>
               </div>
 
               {activePhase === 'construir' && (
                 <div className="ml-16 mt-6 space-y-6 animate-fade-in">
                   <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h4 className="font-semibold">Talleres de asentimiento informado</h4>
-                      <p className="text-sm text-gray-600">
-                        Como apuesta onto-epistemológica, se realizaron jornadas explicativas y consultivas con los 
-                        niños y niñas participantes para obtener sus permisos y alcances de participación.
-                      </p>
-                    </div>
-                    <div className="space-y-4">
-                      <h4 className="font-semibold">Talleres de línea base</h4>
-                      <p className="text-sm text-gray-600">
-                        Jornadas con los estudiantes para conocer sus saberes previos sobre los cuatro ejes temáticos: 
-                        Bilingüismo, Pensamiento computacional, Formación de ciudadanías y Educación para la paz.
-                      </p>
-                    </div>
+                    {getSection("phases")?.phase2Sub1Title && (
+                      <div className="space-y-4">
+                        <h4 className="font-semibold">{getSection("phases")?.phase2Sub1Title}</h4>
+                        <p className="text-sm text-gray-600">
+                          {getSection("phases")?.phase2Sub1Description}
+                        </p>
+                      </div>
+                    )}
+                    {getSection("phases")?.phase2Sub2Title && (
+                      <div className="space-y-4">
+                        <h4 className="font-semibold">{getSection("phases")?.phase2Sub2Title}</h4>
+                        <p className="text-sm text-gray-600">
+                          {getSection("phases")?.phase2Sub2Description}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">Talleres de saberes propios</h4>
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div className="bg-rural-orange-light/10 p-4 rounded-lg">
-                        <h5 className="font-medium mb-3 text-rural-orange-dark">Formación de Ciudadanías</h5>
-                        <ul className="text-sm space-y-1 text-rural-orange-dark">
-                          <li>• Taller sobre participación</li>
-                          <li>• Taller sobre territorio</li>
-                          <li>• Taller sobre memoria colectiva</li>
-                        </ul>
-                      </div>
-                      <div className="bg-rural-orange-light/10 p-4 rounded-lg">
-                        <h5 className="font-medium mb-3 text-rural-orange-dark">Educación para la Paz</h5>
-                        <ul className="text-sm space-y-1 text-rural-orange-dark">
-                          <li>• Taller sobre ética del cuidado</li>
-                          <li>• Taller sobre justicia</li>
-                          <li>• Taller sobre memoria colectiva</li>
-                        </ul>
+                  {getSection("phases")?.phase2Sub3Title && (
+                    <div className="space-y-4">
+                      <h4 className="font-semibold">{getSection("phases")?.phase2Sub3Title}</h4>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        {getSection("phases")?.phase2Box1Title && (
+                          <div className="bg-rural-orange-light/10 p-4 rounded-lg">
+                            <h5 className="font-medium mb-3 text-rural-orange-dark">
+                              {getSection("phases")?.phase2Box1Title}
+                            </h5>
+                            <ul className="text-sm space-y-1 text-rural-orange-dark">
+                              {getSection("phases")?.phase2Box1Items?.split('\n').map((item, idx) => (
+                                item.trim() && <li key={idx}>• {item.trim()}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {getSection("phases")?.phase2Box2Title && (
+                          <div className="bg-rural-orange-light/10 p-4 rounded-lg">
+                            <h5 className="font-medium mb-3 text-rural-orange-dark">
+                              {getSection("phases")?.phase2Box2Title}
+                            </h5>
+                            <ul className="text-sm space-y-1 text-rural-orange-dark">
+                              {getSection("phases")?.phase2Box2Items?.split('\n').map((item, idx) => (
+                                item.trim() && <li key={idx}>• {item.trim()}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
             </Card>
@@ -627,9 +718,11 @@ export default function Home() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-rural-orange-main rounded-full flex items-center justify-center text-white font-bold text-xl">
-                      3
+                      {getSection("phases")?.phase3Number || 3}
                     </div>
-                    <h3 className="text-2xl font-bold text-rural-orange-dark">MAPEO GENERAL</h3>
+                    <h3 className="text-2xl font-bold text-rural-orange-dark">
+                      {getSection("phases")?.phase3Title || "MAPEO GENERAL"}
+                    </h3>
                   </div>
                   <ChevronRight 
                     className={`h-6 w-6 transition-transform duration-300 ${
@@ -638,36 +731,42 @@ export default function Home() {
                   />
                 </div>
                 <p className="text-gray-600 ml-16">
-                  Análisis de datos, creación de la plataforma y apropiación social del conocimiento.
+                  {getSection("phases")?.phase3Description || "Análisis de datos, creación de la plataforma y apropiación social del conocimiento."}
                 </p>
               </div>
 
               {activePhase === 'mapeo' && (
                 <div className="ml-16 mt-6 space-y-4 animate-fade-in">
                   <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h4 className="font-semibold">Identificación de Temas, Intereses y Necesidades</h4>
-                      <p className="text-sm text-gray-600">
-                        Se analizan los diarios de campo de cada taller y visita para triangular contenidos y 
-                        hallar pistas para los hilos temáticos de la plataforma educativa.
-                      </p>
-                    </div>
-                    <div className="space-y-4">
-                      <h4 className="font-semibold">Creación de la malla curricular</h4>
-                      <p className="text-sm text-gray-600">
-                        Se crea la propuesta curricular de la plataforma validando con maestras titulares los 
-                        Estándares Básicos de Competencias y los Derechos Básicos de Aprendizaje.
-                      </p>
-                    </div>
+                    {getSection("phases")?.phase3Sub1Title && (
+                      <div className="space-y-4">
+                        <h4 className="font-semibold">{getSection("phases")?.phase3Sub1Title}</h4>
+                        <p className="text-sm text-gray-600">
+                          {getSection("phases")?.phase3Sub1Description}
+                        </p>
+                      </div>
+                    )}
+                    {getSection("phases")?.phase3Sub2Title && (
+                      <div className="space-y-4">
+                        <h4 className="font-semibold">{getSection("phases")?.phase3Sub2Title}</h4>
+                        <p className="text-sm text-gray-600">
+                          {getSection("phases")?.phase3Sub2Description}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  <div className="bg-rural-orange-light/10 p-4 rounded-lg">
-                    <h5 className="font-medium mb-2 text-rural-orange-dark">Apropiación Social del Conocimiento</h5>
-                    <ul className="text-sm space-y-1 text-rural-orange-dark">
-                      <li>• Presentación en evento académico internacional</li>
-                      <li>• Presentación ante pares académicos institucionales</li>
-                      <li>• Participación en programa radial</li>
-                    </ul>
-                  </div>
+                  {getSection("phases")?.phase3BoxTitle && (
+                    <div className="bg-rural-orange-light/10 p-4 rounded-lg">
+                      <h5 className="font-medium mb-2 text-rural-orange-dark">
+                        {getSection("phases")?.phase3BoxTitle}
+                      </h5>
+                      <ul className="text-sm space-y-1 text-rural-orange-dark">
+                        {getSection("phases")?.phase3BoxItems?.split('\n').map((item, idx) => (
+                          item.trim() && <li key={idx}>• {item.trim()}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
             </Card>
@@ -775,10 +874,10 @@ export default function Home() {
             <div>
               <div className="flex items-center text-xl font-bold mb-4">
                 <img src={logoImage} alt="Conexión Rural 360" className="h-10 w-10 mr-3 brightness-0 invert" />
-                <span>Conexión Rural 360</span>
+                <span>{getSection("contact")?.footerTitle || "Conexión Rural 360"}</span>
               </div>
               <p className="text-white/80 mb-4">
-                Educando en Contexto - Una investigación que transforma la educación rural a través de la tecnología y contenidos territorializados.
+                {getSection("contact")?.footerDescription || "Educando en Contexto - Una investigación que transforma la educación rural a través de la tecnología y contenidos territorializados."}
               </p>
             </div>
 
@@ -794,17 +893,19 @@ export default function Home() {
             </div>
 
             <div>
-              <h3 className="font-bold mb-4">Instituciones Participantes</h3>
+              <h3 className="font-bold mb-4">
+                {getSection("contact")?.footerInstitTitle || "Instituciones Participantes"}
+              </h3>
               <div className="space-y-2 text-white/80">
-                <p>IEDRI Mundo Nuevo - La Calera</p>
-                <p>Colegio Nuevo San Andrés de los Altos - Usme</p>
-                <p>Universidad Compensar</p>
+                {getSection("contact")?.footerInstit1 && <p>{getSection("contact")?.footerInstit1}</p>}
+                {getSection("contact")?.footerInstit2 && <p>{getSection("contact")?.footerInstit2}</p>}
+                {getSection("contact")?.footerInstit3 && <p>{getSection("contact")?.footerInstit3}</p>}
               </div>
             </div>
           </div>
 
           <div className="border-t border-white/20 mt-8 pt-8 text-center text-white/60">
-            <p>&copy; 2025 Conexión Rural 360. Todos los derechos reservados.</p>
+            <p>{getSection("contact")?.footerCopyright || "© 2025 Conexión Rural 360. Todos los derechos reservados."}</p>
           </div>
         </div>
       </footer>
