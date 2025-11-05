@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { 
   Eye, Users, Clock, MousePointerClick, TrendingUp, Smartphone,
-  Monitor, Tablet, Globe, Target, ArrowUp, ArrowDown
+  Monitor, Tablet, Globe, Target, ArrowUp, ArrowDown, Download, Play, FileText
 } from "lucide-react";
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -132,6 +132,30 @@ export default function AnalyticsPage() {
         credentials: "include",
       });
       if (!response.ok) throw new Error("Error al obtener timeline");
+      return response.json();
+    },
+    enabled: !!authData,
+  });
+
+  const { data: downloadsData } = useQuery({
+    queryKey: ["analytics-downloads", timeRange],
+    queryFn: async () => {
+      const response = await fetch(`/api/analytics/material-downloads?days=${timeRange}`, {
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Error al obtener descargas");
+      return response.json();
+    },
+    enabled: !!authData,
+  });
+
+  const { data: videoViewsData } = useQuery({
+    queryKey: ["analytics-video-views", timeRange],
+    queryFn: async () => {
+      const response = await fetch(`/api/analytics/video-views?days=${timeRange}`, {
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Error al obtener reproducciones");
       return response.json();
     },
     enabled: !!authData,
@@ -299,6 +323,8 @@ export default function AnalyticsPage() {
             <TabsTrigger value="pages">Páginas</TabsTrigger>
             <TabsTrigger value="devices">Dispositivos</TabsTrigger>
             <TabsTrigger value="conversions">Conversiones</TabsTrigger>
+            <TabsTrigger value="downloads">Descargas</TabsTrigger>
+            <TabsTrigger value="videos">Videos</TabsTrigger>
           </TabsList>
 
           {/* Tab: Tráfico */}
@@ -542,6 +568,229 @@ export default function AnalyticsPage() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Tab: Descargas de Materiales */}
+          <TabsContent value="downloads" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Download className="h-4 w-4 text-blue-600" />
+                    Total Descargas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-blue-600">
+                    {downloadsData?.totalDownloads?.toLocaleString() || 0}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">En los últimos {timeRange} días</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Timeline de Descargas */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Descargas en el Tiempo</CardTitle>
+                  <CardDescription>Evolución diaria de descargas</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={downloadsData?.downloadsTimeline || []}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="downloads" stroke="#0088FE" name="Descargas" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Descargas por Material */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Top Materiales Descargados</CardTitle>
+                  <CardDescription>Archivos más populares</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {downloadsData?.downloadsByMaterial?.length > 0 ? (
+                    <div className="space-y-3">
+                      {downloadsData.downloadsByMaterial.map((material: any, index: number) => (
+                        <div key={index} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <FileText className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium truncate">{material.title}</p>
+                              <p className="text-xs text-gray-500">{material.fileType}</p>
+                            </div>
+                          </div>
+                          <Badge variant="secondary" className="ml-2">
+                            {material.downloads} descargas
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-gray-500">
+                      <Download className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No hay descargas registradas</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Tabla detallada */}
+            {downloadsData?.downloadsByMaterial?.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Detalle de Descargas por Material</CardTitle>
+                  <CardDescription>Todos los materiales con sus estadísticas</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Material</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Descargas</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {downloadsData.downloadsByMaterial.map((material: any, index: number) => (
+                        <TableRow key={index}>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-gray-400" />
+                              <span className="font-medium">{material.title}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{material.fileType}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge>{material.downloads}</Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Tab: Reproducciones de Videos */}
+          <TabsContent value="videos" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Play className="h-4 w-4 text-purple-600" />
+                    Total Reproducciones
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-purple-600">
+                    {videoViewsData?.totalViews?.toLocaleString() || 0}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">En los últimos {timeRange} días</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Timeline de Reproducciones */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Reproducciones en el Tiempo</CardTitle>
+                  <CardDescription>Evolución diaria de reproducciones</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={videoViewsData?.viewsTimeline || []}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="views" stroke="#8B5CF6" name="Reproducciones" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Reproducciones por Video */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Top Videos Reproducidos</CardTitle>
+                  <CardDescription>Videos más vistos</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {videoViewsData?.viewsByVideo?.length > 0 ? (
+                    <div className="space-y-3">
+                      {videoViewsData.viewsByVideo.map((video: any, index: number) => (
+                        <div key={index} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <Play className="h-4 w-4 text-purple-400 flex-shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium truncate">{video.title}</p>
+                            </div>
+                          </div>
+                          <Badge variant="secondary" className="ml-2">
+                            {video.views} vistas
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-gray-500">
+                      <Play className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No hay reproducciones registradas</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Tabla detallada */}
+            {videoViewsData?.viewsByVideo?.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Detalle de Reproducciones por Video</CardTitle>
+                  <CardDescription>Todos los videos con sus estadísticas</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Video</TableHead>
+                        <TableHead>Reproducciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {videoViewsData.viewsByVideo.map((video: any, index: number) => (
+                        <TableRow key={index}>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Play className="h-4 w-4 text-purple-400" />
+                              <span className="font-medium">{video.title}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge>{video.views}</Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>

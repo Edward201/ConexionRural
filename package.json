@@ -11,17 +11,7 @@
     "db:push": "drizzle-kit push",
     "db:seed": "tsx server/seed.ts",
     "db:seed-analytics": "tsx server/seed-analytics.ts",
-    "db:seed-content": "tsx server/seed-content.ts",
-    "db:migrate-hero": "tsx aplicar-migracion-hero.js",
-    "db:migrate-cards": "tsx aplicar-migracion-cards.js",
-    "db:migrate-inst": "tsx aplicar-migracion-instituciones.js",
-    "db:migrate-features": "tsx aplicar-migracion-features.js",
-    "db:migrate-team": "tsx aplicar-migracion-team.js",
-    "db:migrate-phases": "tsx aplicar-migracion-phases.js",
-    "db:migrate-footer": "tsx aplicar-migracion-footer.js",
-    "db:fix-video": "tsx arreglar-video-url.js",
-    "db:ver-hero": "tsx ver-hero-data.js",
-    "db:ver-secciones": "tsx ver-secciones.js"
+    "db:seed-content": "tsx server/seed-content.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -55,6 +45,7 @@
     "@radix-ui/react-toggle-group": "^1.1.3",
     "@radix-ui/react-tooltip": "^1.2.0",
     "@tanstack/react-query": "^5.60.5",
+    "animejs": "^3.2.2",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

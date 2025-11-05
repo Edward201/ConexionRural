@@ -49,7 +49,8 @@ export default function LoginPage() {
       if (data.user.role === "admin") {
         setLocation("/dashboard");
       } else {
-        setLocation("/");
+        // Usuarios regulares van directo a analytics
+        setLocation("/analytics");
       }
     },
     onError: (error: Error) => {

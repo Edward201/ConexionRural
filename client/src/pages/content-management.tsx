@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { DashboardNav } from "@/components/dashboard-nav";
 import { Edit, Eye, EyeOff, Save, X } from "lucide-react";
 import type { PageContent } from "@shared/schema";
 
@@ -154,7 +155,6 @@ export default function ContentManagementPage() {
     },
     enabled: !!authData,
     staleTime: 0, // Los datos siempre están "stale"
-    cacheTime: 0, // No cachear
   });
 
   // Crear/Actualizar contenido
@@ -446,22 +446,19 @@ export default function ContentManagementPage() {
   const contents: PageContent[] = contentData?.contents || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">Gestión de Contenido</h1>
-            <p className="text-gray-600 mt-1">
-              Administra el contenido de la página principal
-            </p>
+    <>
+      <DashboardNav />
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold">Gestión de Contenido</h1>
+              <p className="text-gray-600 mt-1">
+                Administra el contenido de la página principal
+              </p>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setLocation("/dashboard")}>
-              Volver
-            </Button>
-          </div>
-        </div>
 
         {/* Tabla de contenido */}
         <Card>
@@ -1503,6 +1500,7 @@ export default function ContentManagementPage() {
         </Dialog>
       </div>
     </div>
+    </>
   );
 }
 

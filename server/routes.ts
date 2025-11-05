@@ -2,8 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import passport from "passport";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated, isAdmin } from "./auth";
-import { insertUserSchema, loginSchema, insertAnalyticsSchema, analytics, insertPageContentSchema, pageContent } from "@shared/schema";
+import { setupAuth, isAuthenticated, isAdmin, isAuthenticatedUser } from "./auth";
+import { insertUserSchema, loginSchema, insertAnalyticsSchema, analytics, insertPageContentSchema, pageContent, downloadableMaterials, insertDownloadableMaterialSchema, galleryItems, insertGalleryItemSchema, materialDownloads, insertMaterialDownloadSchema, videoViews, insertVideoViewSchema } from "@shared/schema";
 import { fromError } from "zod-validation-error";
 import { db } from "./db";
 import { eq, sql, and, gte, desc, count, asc } from "drizzle-orm";
@@ -86,11 +86,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // POST /api/auth/logout - Cerrar sesión
   app.post("/api/auth/logout", (req, res) => {
+    console.log("🚪 [LOGOUT] Cerrando sesión del usuario:", req.user?.username || "desconocido");
+    
     req.logout((err) => {
       if (err) {
+        console.error("❌ [LOGOUT] Error al cerrar sesión:", err);
         return res.status(500).json({ message: "Error al cerrar sesión" });
       }
-      res.json({ message: "Sesión cerrada exitosamente" });
+      
+      // Destruir la sesión completamente
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("❌ [LOGOUT] Error al destruir sesión:", err);
+        }
+        
+        // Limpiar la cookie de sesión
+        res.clearCookie('connect.sid', { path: '/' });
+        
+        console.log("✅ [LOGOUT] Sesión cerrada y destruida exitosamente");
+        res.json({ message: "Sesión cerrada exitosamente" });
+      });
     });
   });
 
@@ -107,6 +122,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const users = await storage.getAllUsers();
       res.json({ users });
     } catch (error) {
+      next(error);
+    }
+  });
+
+  // POST /api/dashboard/users - Crear nuevo usuario (solo admin)
+  app.post("/api/dashboard/users", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      console.log("📥 [POST /api/dashboard/users] Datos recibidos:", req.body);
+      
+      const result = insertUserSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        console.error("❌ [POST /api/dashboard/users] Validación fallida:", result.error);
+        return res.status(400).json({ 
+          message: "Datos inválidos", 
+          errors: fromError(result.error).toString() 
+        });
+      }
+
+      console.log("✅ [POST /api/dashboard/users] Datos validados:", result.data);
+
+      // Verificar si el usuario ya existe
+      const existingUser = await storage.getUserByUsername(result.data.username);
+      if (existingUser) {
+        console.warn("⚠️ [POST /api/dashboard/users] Usuario ya existe:", result.data.username);
+        return res.status(400).json({ message: "El usuario ya existe" });
+      }
+
+      const existingEmail = await storage.getUserByEmail(result.data.email);
+      if (existingEmail) {
+        console.warn("⚠️ [POST /api/dashboard/users] Email ya registrado:", result.data.email);
+        return res.status(400).json({ message: "El email ya está registrado" });
+      }
+
+      // Crear usuario
+      const newUser = await storage.createUser(result.data);
+      console.log("✅ [POST /api/dashboard/users] Usuario creado exitosamente:", newUser.id);
+
+      res.status(201).json({
+        message: "Usuario creado exitosamente",
+        user: newUser,
+      });
+    } catch (error) {
+      console.error("💥 [POST /api/dashboard/users] Error:", error);
       next(error);
     }
   });
@@ -133,6 +192,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         user: updated 
       });
     } catch (error) {
+      next(error);
+    }
+  });
+
+  // DELETE /api/dashboard/users/:id - Eliminar usuario (solo admin)
+  app.delete("/api/dashboard/users/:id", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const userId = parseInt(req.params.id);
+      console.log("🗑️ [DELETE /api/dashboard/users/:id] Intentando eliminar usuario:", userId);
+      
+      // No permitir que un admin se elimine a sí mismo
+      if (userId === (req.user as any).id) {
+        console.warn("⚠️ [DELETE /api/dashboard/users/:id] Intento de auto-eliminación");
+        return res.status(400).json({ message: "No puedes eliminar tu propia cuenta" });
+      }
+
+      const deleted = await storage.deleteUser(userId);
+
+      if (!deleted) {
+        console.warn("⚠️ [DELETE /api/dashboard/users/:id] Usuario no encontrado:", userId);
+        return res.status(404).json({ message: "Usuario no encontrado" });
+      }
+
+      console.log("✅ [DELETE /api/dashboard/users/:id] Usuario eliminado:", deleted.id);
+      res.json({ 
+        message: "Usuario eliminado exitosamente", 
+        user: deleted 
+      });
+    } catch (error) {
+      console.error("💥 [DELETE /api/dashboard/users/:id] Error:", error);
       next(error);
     }
   });
@@ -174,8 +263,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/analytics/overview - Resumen general de analytics (Admin)
-  app.get("/api/analytics/overview", isAuthenticated, isAdmin, async (req, res, next) => {
+  // GET /api/analytics/overview - Resumen general de analytics (Usuarios autenticados)
+  app.get("/api/analytics/overview", isAuthenticatedUser, async (req, res, next) => {
     try {
       const { days = 30, source, deviceType, pageUrl } = req.query;
       const daysAgo = new Date();
@@ -241,8 +330,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/analytics/sources - Fuentes de tráfico (Admin)
-  app.get("/api/analytics/sources", isAuthenticated, isAdmin, async (req, res, next) => {
+  // GET /api/analytics/sources - Fuentes de tráfico (Usuarios autenticados)
+  app.get("/api/analytics/sources", isAuthenticatedUser, async (req, res, next) => {
     try {
       const { days = 30 } = req.query;
       const daysAgo = new Date();
@@ -265,8 +354,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/analytics/pages - Páginas más visitadas (Admin)
-  app.get("/api/analytics/pages", isAuthenticated, isAdmin, async (req, res, next) => {
+  // GET /api/analytics/pages - Páginas más visitadas (Usuarios autenticados)
+  app.get("/api/analytics/pages", isAuthenticatedUser, async (req, res, next) => {
     try {
       const { days = 30 } = req.query;
       const daysAgo = new Date();
@@ -291,8 +380,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/analytics/devices - Dispositivos usados (Admin)
-  app.get("/api/analytics/devices", isAuthenticated, isAdmin, async (req, res, next) => {
+  // GET /api/analytics/devices - Dispositivos usados (Usuarios autenticados)
+  app.get("/api/analytics/devices", isAuthenticatedUser, async (req, res, next) => {
     try {
       const { days = 30 } = req.query;
       const daysAgo = new Date();
@@ -316,8 +405,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/analytics/conversions - Conversiones por tipo (Admin)
-  app.get("/api/analytics/conversions", isAuthenticated, isAdmin, async (req, res, next) => {
+  // GET /api/analytics/conversions - Conversiones por tipo (Usuarios autenticados)
+  app.get("/api/analytics/conversions", isAuthenticatedUser, async (req, res, next) => {
     try {
       const { days = 30 } = req.query;
       const daysAgo = new Date();
@@ -342,8 +431,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/analytics/timeline - Visitas por día (Admin)
-  app.get("/api/analytics/timeline", isAuthenticated, isAdmin, async (req, res, next) => {
+  // GET /api/analytics/timeline - Visitas por día (Usuarios autenticados)
+  app.get("/api/analytics/timeline", isAuthenticatedUser, async (req, res, next) => {
     try {
       const { days = 30 } = req.query;
       const daysAgo = new Date();
@@ -363,6 +452,145 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ timeline });
     } catch (error) {
+      next(error);
+    }
+  });
+
+  // POST /api/analytics/track-download - Trackear descarga de material (Público)
+  app.post("/api/analytics/track-download", async (req, res, next) => {
+    try {
+      const result = insertMaterialDownloadSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: "Datos inválidos", 
+          errors: fromError(result.error).toString() 
+        });
+      }
+
+      await db.insert(materialDownloads).values(result.data);
+
+      res.json({ message: "Descarga registrada exitosamente" });
+    } catch (error) {
+      console.error("Error tracking download:", error);
+      next(error);
+    }
+  });
+
+  // POST /api/analytics/track-video-view - Trackear reproducción de video (Público)
+  app.post("/api/analytics/track-video-view", async (req, res, next) => {
+    try {
+      const result = insertVideoViewSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: "Datos inválidos", 
+          errors: fromError(result.error).toString() 
+        });
+      }
+
+      await db.insert(videoViews).values(result.data);
+
+      res.json({ message: "Reproducción registrada exitosamente" });
+    } catch (error) {
+      console.error("Error tracking video view:", error);
+      next(error);
+    }
+  });
+
+  // GET /api/analytics/material-downloads - Estadísticas de descargas de materiales (Usuarios autenticados)
+  app.get("/api/analytics/material-downloads", isAuthenticatedUser, async (req, res, next) => {
+    try {
+      const { days = 30 } = req.query;
+      const daysAgo = new Date();
+      daysAgo.setDate(daysAgo.getDate() - Number(days));
+
+      // Total de descargas
+      const totalDownloads = await db
+        .select({ count: count() })
+        .from(materialDownloads)
+        .where(gte(materialDownloads.downloadedAt, daysAgo));
+
+      // Descargas por material
+      const downloadsByMaterial = await db
+        .select({
+          materialId: materialDownloads.materialId,
+          title: downloadableMaterials.title,
+          fileType: downloadableMaterials.fileType,
+          downloads: count(),
+        })
+        .from(materialDownloads)
+        .leftJoin(downloadableMaterials, eq(materialDownloads.materialId, downloadableMaterials.id))
+        .where(gte(materialDownloads.downloadedAt, daysAgo))
+        .groupBy(materialDownloads.materialId, downloadableMaterials.title, downloadableMaterials.fileType)
+        .orderBy(desc(count()));
+
+      // Timeline de descargas por día
+      const downloadsTimeline = await db
+        .select({
+          date: sql<string>`DATE(${materialDownloads.downloadedAt})`,
+          downloads: count(),
+        })
+        .from(materialDownloads)
+        .where(gte(materialDownloads.downloadedAt, daysAgo))
+        .groupBy(sql`DATE(${materialDownloads.downloadedAt})`)
+        .orderBy(sql`DATE(${materialDownloads.downloadedAt})`);
+
+      res.json({ 
+        totalDownloads: totalDownloads[0]?.count || 0,
+        downloadsByMaterial,
+        downloadsTimeline
+      });
+    } catch (error) {
+      console.error("Error getting material downloads stats:", error);
+      next(error);
+    }
+  });
+
+  // GET /api/analytics/video-views - Estadísticas de reproducciones de videos (Usuarios autenticados)
+  app.get("/api/analytics/video-views", isAuthenticatedUser, async (req, res, next) => {
+    try {
+      const { days = 30 } = req.query;
+      const daysAgo = new Date();
+      daysAgo.setDate(daysAgo.getDate() - Number(days));
+
+      // Total de reproducciones
+      const totalViews = await db
+        .select({ count: count() })
+        .from(videoViews)
+        .where(gte(videoViews.viewedAt, daysAgo));
+
+      // Reproducciones por video
+      const viewsByVideo = await db
+        .select({
+          galleryItemId: videoViews.galleryItemId,
+          title: galleryItems.title,
+          views: count(),
+        })
+        .from(videoViews)
+        .leftJoin(galleryItems, eq(videoViews.galleryItemId, galleryItems.id))
+        .where(gte(videoViews.viewedAt, daysAgo))
+        .groupBy(videoViews.galleryItemId, galleryItems.title)
+        .orderBy(desc(count()));
+
+      // Timeline de reproducciones por día
+      const viewsTimeline = await db
+        .select({
+          date: sql<string>`DATE(${videoViews.viewedAt})`,
+          views: count(),
+        })
+        .from(videoViews)
+        .where(gte(videoViews.viewedAt, daysAgo))
+        .groupBy(sql`DATE(${videoViews.viewedAt})`)
+        .orderBy(sql`DATE(${videoViews.viewedAt})`);
+
+      res.json({ 
+        totalViews: totalViews[0]?.count || 0,
+        viewsByVideo,
+        viewsTimeline
+      });
+    } catch (error) {
+      console.error("Error getting video views stats:", error);
       next(error);
     }
   });
@@ -660,6 +888,241 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         message: "Contenido eliminado exitosamente",
         content: deleted,
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // ==================== RUTAS DE MATERIALES DESCARGABLES ====================
+
+  // GET /api/materials - Obtener materiales activos (público)
+  app.get("/api/materials", async (req, res, next) => {
+    try {
+      const materials = await db
+        .select()
+        .from(downloadableMaterials)
+        .where(eq(downloadableMaterials.isActive, true))
+        .orderBy(asc(downloadableMaterials.order));
+
+      res.json({ materials });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // GET /api/cms/materials - Obtener todos los materiales (Admin)
+  app.get("/api/cms/materials", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const materials = await db
+        .select()
+        .from(downloadableMaterials)
+        .orderBy(asc(downloadableMaterials.order));
+
+      res.json({ materials });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // POST /api/cms/materials - Crear nuevo material (Admin)
+  app.post("/api/cms/materials", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const result = insertDownloadableMaterialSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: "Datos inválidos", 
+          errors: fromError(result.error).toString() 
+        });
+      }
+
+      const [newMaterial] = await db
+        .insert(downloadableMaterials)
+        .values({
+          ...result.data,
+          updatedBy: (req.user as any).id,
+        })
+        .returning();
+
+      res.status(201).json({
+        message: "Material creado exitosamente",
+        material: newMaterial,
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // PUT /api/cms/materials/:id - Actualizar material (Admin)
+  app.put("/api/cms/materials/:id", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { title, description, fileType, fileSize, fileUrl, isActive, order } = req.body;
+
+      const [updated] = await db
+        .update(downloadableMaterials)
+        .set({
+          title,
+          description,
+          fileType,
+          fileSize,
+          fileUrl,
+          isActive,
+          order,
+          updatedAt: new Date(),
+          updatedBy: (req.user as any).id,
+        })
+        .where(eq(downloadableMaterials.id, parseInt(id)))
+        .returning();
+
+      if (!updated) {
+        return res.status(404).json({ message: "Material no encontrado" });
+      }
+
+      res.json({
+        message: "Material actualizado exitosamente",
+        material: updated,
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // DELETE /api/cms/materials/:id - Eliminar material (Admin)
+  app.delete("/api/cms/materials/:id", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const { id } = req.params;
+
+      const [deleted] = await db
+        .delete(downloadableMaterials)
+        .where(eq(downloadableMaterials.id, parseInt(id)))
+        .returning();
+
+      if (!deleted) {
+        return res.status(404).json({ message: "Material no encontrado" });
+      }
+
+      res.json({
+        message: "Material eliminado exitosamente",
+        material: deleted,
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // ==================== RUTAS DE GALERÍA INTERACTIVA ====================
+
+  // GET /api/gallery - Obtener items de galería activos (público)
+  app.get("/api/gallery", async (req, res, next) => {
+    try {
+      const items = await db
+        .select()
+        .from(galleryItems)
+        .where(eq(galleryItems.isActive, true))
+        .orderBy(asc(galleryItems.order));
+
+      res.json({ items });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // GET /api/cms/gallery - Obtener todos los items de galería (Admin)
+  app.get("/api/cms/gallery", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const items = await db
+        .select()
+        .from(galleryItems)
+        .orderBy(asc(galleryItems.order));
+
+      res.json({ items });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // POST /api/cms/gallery - Crear nuevo item de galería (Admin)
+  app.post("/api/cms/gallery", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const result = insertGalleryItemSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: "Datos inválidos", 
+          errors: fromError(result.error).toString() 
+        });
+      }
+
+      const [newItem] = await db
+        .insert(galleryItems)
+        .values({
+          ...result.data,
+          updatedBy: (req.user as any).id,
+        })
+        .returning();
+
+      res.status(201).json({
+        message: "Item de galería creado exitosamente",
+        item: newItem,
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // PUT /api/cms/gallery/:id - Actualizar item de galería (Admin)
+  app.put("/api/cms/gallery/:id", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { title, description, imageUrl, videoUrl, isActive, order } = req.body;
+
+      const [updated] = await db
+        .update(galleryItems)
+        .set({
+          title,
+          description,
+          imageUrl,
+          videoUrl: videoUrl || null,
+          isActive,
+          order,
+          updatedAt: new Date(),
+          updatedBy: (req.user as any).id,
+        })
+        .where(eq(galleryItems.id, parseInt(id)))
+        .returning();
+
+      if (!updated) {
+        return res.status(404).json({ message: "Item de galería no encontrado" });
+      }
+
+      res.json({
+        message: "Item de galería actualizado exitosamente",
+        item: updated,
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // DELETE /api/cms/gallery/:id - Eliminar item de galería (Admin)
+  app.delete("/api/cms/gallery/:id", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const { id } = req.params;
+
+      const [deleted] = await db
+        .delete(galleryItems)
+        .where(eq(galleryItems.id, parseInt(id)))
+        .returning();
+
+      if (!deleted) {
+        return res.status(404).json({ message: "Item de galería no encontrado" });
+      }
+
+      res.json({
+        message: "Item de galería eliminado exitosamente",
+        item: deleted,
       });
     } catch (error) {
       next(error);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,12 +19,132 @@ import galleryImage8 from "@assets/image_1753932377054.png";
 import galleryImage9 from "@assets/image_1753932387634.png";
 import galleryImage10 from "@assets/image_1753932392897.png";
 import galleryImage11 from "@assets/image_1753932401149.png";
+import { useCountUp, useScrollAnimation } from "@/hooks/use-anime";
+import { fadeInUp, fadeInScale, staggerCards, floatingElements, buttonHover, buttonHoverOut } from "@/lib/animations";
+import { trackMaterialDownload, trackVideoView, trackSectionView } from "@/lib/analytics";
+import anime from "animejs";
 
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [stats, setStats] = useState({ students: 0, schools: 0, themes: 0 });
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [activePhase, setActivePhase] = useState<string | null>(null);
+
+  // Referencias para animaciones con anime.js
+  const heroTitleRef = useRef<HTMLHeadingElement>(null);
+  const heroSubtitleRef = useRef<HTMLHeadingElement>(null);
+  const heroDescRef = useRef<HTMLParagraphElement>(null);
+  const heroBadgeRef = useRef<HTMLDivElement>(null);
+  const statsCardsRef = useRef<HTMLDivElement>(null);
+  const institutionsRef = useRef<HTMLDivElement>(null);
+  
+  // Refs para animaciones por scroll
+  // Track secciones vistas (solo una vez por sesión)
+  const trackedSections = useRef<Set<string>>(new Set());
+
+  const aboutSectionRef = useScrollAnimation((el) => {
+    // Solo animar el contenido interno (sin animar el contenedor)
+    const title = el.querySelector('h2');
+    const content = el.querySelectorAll('.prose, .bg-rural-orange-light\\/10');
+    if (title) fadeInUp(title as HTMLElement, 0);
+    if (content.length) {
+      setTimeout(() => {
+        staggerCards(Array.from(content) as HTMLElement[], 150);
+      }, 200);
+    }
+    
+    // Track section view
+    if (!trackedSections.current.has('about')) {
+      trackedSections.current.add('about');
+      trackSectionView('about');
+    }
+  });
+
+  const teamSectionRef = useScrollAnimation((el) => {
+    // Animar título y cards del equipo sin animar el contenedor
+    const title = el.querySelector('h2');
+    const subtitle = el.querySelector('p.text-center');
+    if (title) fadeInUp(title as HTMLElement, 0);
+    if (subtitle) fadeInUp(subtitle as HTMLElement, 100);
+    
+    setTimeout(() => {
+      const teamCards = el.querySelectorAll('.grid > div');
+      staggerCards(Array.from(teamCards) as HTMLElement[], 100);
+    }, 300);
+    
+    // Track section view
+    if (!trackedSections.current.has('team')) {
+      trackedSections.current.add('team');
+      trackSectionView('team');
+    }
+  });
+
+  const phasesSectionRef = useScrollAnimation((el) => {
+    // Animar título y cards de fases
+    const title = el.querySelector('h2');
+    if (title) fadeInUp(title as HTMLElement, 0);
+    
+    setTimeout(() => {
+      const phaseCards = el.querySelectorAll('.space-y-8 > div');
+      staggerCards(Array.from(phaseCards) as HTMLElement[], 150);
+    }, 200);
+    
+    // Track section view
+    if (!trackedSections.current.has('phases')) {
+      trackedSections.current.add('phases');
+      trackSectionView('phases');
+    }
+  });
+
+  const gallerySectionRef = useScrollAnimation((el) => {
+    // Animar título y galería
+    const title = el.querySelector('h2');
+    if (title) fadeInUp(title as HTMLElement, 0);
+    
+    setTimeout(() => {
+      const galleryItems = el.querySelectorAll('.gallery-item');
+      staggerCards(Array.from(galleryItems) as HTMLElement[], 60);
+    }, 200);
+  });
+
+  const materialsRef = useScrollAnimation((el) => {
+    // Animar título y cards de materiales
+    const title = el.querySelector('h2');
+    if (title) fadeInUp(title as HTMLElement, 0);
+    
+    setTimeout(() => {
+      const materialCards = el.querySelectorAll('.material-card');
+      staggerCards(Array.from(materialCards) as HTMLElement[], 80);
+    }, 200);
+  });
+
+  const footerRef = useScrollAnimation((el) => {
+    // Track contact/footer section view
+    if (!trackedSections.current.has('contact')) {
+      trackedSections.current.add('contact');
+      trackSectionView('contact');
+    }
+  });
+
+  // Cargar materiales descargables
+  const { data: materialsData } = useQuery({
+    queryKey: ["materials"],
+    queryFn: async () => {
+      const response = await fetch("/api/materials");
+      if (!response.ok) throw new Error("Error al cargar materiales");
+      return response.json();
+    },
+  });
+
+  // Cargar galería interactiva
+  const { data: galleryData } = useQuery({
+    queryKey: ["gallery"],
+    queryFn: async () => {
+      const response = await fetch("/api/gallery");
+      if (!response.ok) throw new Error("Error al cargar galería");
+      return response.json();
+    },
+  });
 
   // Cargar contenido del CMS
   const { data: cmsData } = useQuery({
@@ -39,7 +159,6 @@ export default function Home() {
       return data;
     },
     staleTime: 0, // Los datos siempre están "stale"
-    cacheTime: 0, // No cachear
   });
 
   const contents: PageContent[] = cmsData?.contents || [];
@@ -47,6 +166,49 @@ export default function Home() {
   // Función helper para obtener contenido de una sección
   const getSection = (section: string) => 
     contents.find((c) => c.section === section && c.isVisible);
+  
+  // Contadores animados con anime.js (después de getSection)
+  const counter1Ref = useCountUp(getSection("hero")?.card1Number || 2, 2000, !!cmsData);
+  const counter2Ref = useCountUp(getSection("hero")?.card2Number || 150, 2000, !!cmsData);
+  const counter3Ref = useCountUp(getSection("hero")?.card3Number || 4, 2000, !!cmsData);
+
+  // Track hero section cuando se carga la página
+  useEffect(() => {
+    trackSectionView('hero');
+  }, []);
+
+  // Animaciones del hero al cargar la página
+  useEffect(() => {
+    // Esperar a que el contenido cargue antes de animar
+    if (!cmsData) return;
+
+    // Animar elementos del hero con anime.js
+    if (heroBadgeRef.current) {
+      fadeInScale(heroBadgeRef.current, 0);
+    }
+    if (heroTitleRef.current) {
+      fadeInUp(heroTitleRef.current, 200);
+    }
+    if (heroSubtitleRef.current) {
+      fadeInUp(heroSubtitleRef.current, 400);
+    }
+    if (heroDescRef.current) {
+      fadeInUp(heroDescRef.current, 600);
+    }
+    if (statsCardsRef.current) {
+      const cards = statsCardsRef.current.querySelectorAll('.stat-card');
+      staggerCards(Array.from(cards) as HTMLElement[], 800);
+    }
+    if (institutionsRef.current) {
+      const instCards = institutionsRef.current.querySelectorAll('.institution-card');
+      staggerCards(Array.from(instCards) as HTMLElement[], 1200);
+    }
+    
+    // Animar elementos decorativos flotantes
+    setTimeout(() => {
+      floatingElements('.floating-element');
+    }, 1500);
+  }, [cmsData]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -64,33 +226,6 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Animated counters for statistics
-  useEffect(() => {
-    const targets = { students: 150, schools: 2, themes: 4 };
-    const duration = 2000;
-    const steps = 60;
-    const stepDuration = duration / steps;
-
-    let currentStep = 0;
-    const timer = setInterval(() => {
-      currentStep++;
-      const progress = Math.min(currentStep / steps, 1);
-      const easeOutProgress = 1 - Math.pow(1 - progress, 3);
-
-      setStats({
-        students: Math.round(targets.students * easeOutProgress),
-        schools: Math.round(targets.schools * easeOutProgress),
-        themes: Math.round(targets.themes * easeOutProgress)
-      });
-
-      if (currentStep >= steps) {
-        clearInterval(timer);
-      }
-    }, stepDuration);
-
-    return () => clearInterval(timer);
-  }, []);
-
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -98,6 +233,72 @@ export default function Home() {
     }
     setIsMobileMenuOpen(false);
   };
+
+  // Manejadores para efectos hover en botones
+  const handleButtonHover = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const target = e.currentTarget;
+    buttonHover(target);
+  };
+
+  const handleButtonHoverOut = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const target = e.currentTarget;
+    buttonHoverOut(target);
+  };
+
+  // Añadir efecto de pulso a badges al cargar
+  useEffect(() => {
+    if (!cmsData) return;
+    
+    const badges = document.querySelectorAll('.pulse-badge');
+    badges.forEach((badge, index) => {
+      anime({
+        targets: badge,
+        scale: [1, 1.05, 1],
+        duration: 2000,
+        delay: index * 300,
+        easing: 'easeInOutQuad',
+        loop: true
+      });
+    });
+  }, [cmsData]);
+
+  // Añadir efectos hover a las cards con anime.js
+  useEffect(() => {
+    const handleCardHover = (e: Event) => {
+      const card = e.currentTarget as HTMLElement;
+      anime({
+        targets: card,
+        scale: 1.05,
+        translateY: -5,
+        duration: 300,
+        easing: 'easeOutQuad'
+      });
+    };
+
+    const handleCardLeave = (e: Event) => {
+      const card = e.currentTarget as HTMLElement;
+      anime({
+        targets: card,
+        scale: 1,
+        translateY: 0,
+        duration: 300,
+        easing: 'easeOutQuad'
+      });
+    };
+
+    const cards = document.querySelectorAll('.hover-card');
+    cards.forEach(card => {
+      card.addEventListener('mouseenter', handleCardHover as EventListener);
+      card.addEventListener('mouseleave', handleCardLeave as EventListener);
+    });
+
+    return () => {
+      cards.forEach(card => {
+        card.removeEventListener('mouseenter', handleCardHover as EventListener);
+        card.removeEventListener('mouseleave', handleCardLeave as EventListener);
+      });
+    };
+  }, [cmsData]); // Re-ejecutar cuando cambie el contenido
 
   return (
     <div className="font-sans bg-gray-50 text-gray-800 leading-relaxed">
@@ -252,24 +453,26 @@ export default function Home() {
 
           {/* Animated Background Elements */}
           <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-20 left-10 w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-            <div className="absolute top-40 right-20 w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '1s' }}></div>
-            <div className="absolute bottom-40 left-1/4 w-4 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '2s' }}></div>
-            <div className="absolute bottom-20 right-1/3 w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '1.5s' }}></div>
+            <div className="floating-element absolute top-20 left-10 w-3 h-3 bg-white rounded-full"></div>
+            <div className="floating-element absolute top-40 right-20 w-2 h-2 bg-white rounded-full"></div>
+            <div className="floating-element absolute bottom-40 left-1/4 w-4 h-4 bg-white rounded-full"></div>
+            <div className="floating-element absolute bottom-20 right-1/3 w-2 h-2 bg-white rounded-full"></div>
           </div>
 
           <div className="max-w-4xl mx-auto relative z-10">
-          <Badge className="mb-6 bg-white/20 text-white border-white/30 hover:bg-white/30 transition-colors duration-300">
+          <div ref={heroBadgeRef} style={{ opacity: 0 }}>
+            <Badge className="pulse-badge mb-6 bg-white/20 text-white border-white/30 hover:bg-white/30 transition-colors duration-300">
             🎓 Investigación Educativa 2025
           </Badge>
+          </div>
 
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
+          <h1 ref={heroTitleRef} style={{ opacity: 0 }} className="text-4xl md:text-6xl font-bold mb-6">
             {getSection("hero")?.title || "Conexión Rural 360"}
           </h1>
-          <h2 className="text-2xl md:text-3xl font-semibold mb-4 text-white/90">
+          <h2 ref={heroSubtitleRef} style={{ opacity: 0 }} className="text-2xl md:text-3xl font-semibold mb-4 text-white/90">
             {getSection("hero")?.subtitle || "Educando en Contexto"}
           </h2>
-          <p className="text-xl md:text-2xl mb-8 opacity-95 leading-relaxed">
+          <p ref={heroDescRef} style={{ opacity: 0 }} className="text-xl md:text-2xl mb-8 opacity-95 leading-relaxed">
             {getSection("hero")?.description || "Una apuesta investigativa para fortalecer la educación desde la creación de una plataforma educativa híbrida con contenidos territorializados."}
           </p>
 
@@ -285,7 +488,9 @@ export default function Home() {
                     window.location.href = link;
                   }
                 }}
-                className="bg-white text-rural-orange-dark px-8 py-4 rounded-xl font-bold hover:bg-gray-100 hover:scale-105 transition-all duration-300 shadow-lg group"
+                onMouseEnter={handleButtonHover}
+                onMouseLeave={handleButtonHoverOut}
+                className="bg-white text-rural-orange-dark px-8 py-4 rounded-xl font-bold hover:bg-gray-100 transition-all duration-300 shadow-lg group"
               >
                 {getSection("hero")?.buttonText}
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
@@ -304,8 +509,10 @@ export default function Home() {
                     window.location.href = link;
                   }
                 }}
+                onMouseEnter={handleButtonHover}
+                onMouseLeave={handleButtonHoverOut}
                 variant="outline"
-                className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl font-bold hover:bg-white hover:text-rural-orange-dark hover:scale-105 transition-all duration-300 group"
+                className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl font-bold hover:bg-white hover:text-rural-orange-dark transition-all duration-300 group"
               >
                 <Play className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
                 {getSection("hero")?.button2Text}
@@ -315,40 +522,46 @@ export default function Home() {
         </div>
 
         {/* Floating Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-16">
+        <div ref={statsCardsRef} className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-16">
           {/* Card 1 */}
-          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 hover:scale-105">
+          <div className="stat-card hover-card bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-colors duration-300 cursor-pointer" style={{ opacity: 0 }}>
             <div className="flex items-center justify-between mb-2">
               <School className="h-8 w-8 text-white" />
               <Badge variant="secondary" className="bg-white/20 text-white">
                 {getSection("hero")?.card1Label || "Participantes"}
               </Badge>
             </div>
-            <div className="text-3xl font-bold text-white">{getSection("hero")?.card1Number || stats.schools}</div>
+            <div className="text-3xl font-bold text-white">
+              <span ref={counter1Ref}>0</span>
+            </div>
             <div className="text-white/80 text-sm">{getSection("hero")?.card1Description || "Instituciones Educativas"}</div>
           </div>
 
           {/* Card 2 */}
-          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 hover:scale-105">
+          <div className="stat-card hover-card bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-colors duration-300 cursor-pointer" style={{ opacity: 0 }}>
             <div className="flex items-center justify-between mb-2">
               <Users className="h-8 w-8 text-white" />
               <Badge variant="secondary" className="bg-white/20 text-white">
                 {getSection("hero")?.card2Label || "Beneficiados"}
               </Badge>
             </div>
-            <div className="text-3xl font-bold text-white">{getSection("hero")?.card2Number || stats.students}</div>
+            <div className="text-3xl font-bold text-white">
+              <span ref={counter2Ref}>0</span>
+            </div>
             <div className="text-white/80 text-sm">{getSection("hero")?.card2Description || "Estudiantes"}</div>
           </div>
 
           {/* Card 3 */}
-          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 hover:scale-105">
+          <div className="stat-card hover-card bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-colors duration-300 cursor-pointer" style={{ opacity: 0 }}>
             <div className="flex items-center justify-between mb-2">
               <BookOpen className="h-8 w-8 text-white" />
               <Badge variant="secondary" className="bg-white/20 text-white">
                 {getSection("hero")?.card3Label || "Temáticas"}
               </Badge>
             </div>
-            <div className="text-3xl font-bold text-white">{getSection("hero")?.card3Number || stats.themes}</div>
+            <div className="text-3xl font-bold text-white">
+              <span ref={counter3Ref}>0</span>
+            </div>
             <div className="text-white/80 text-sm">{getSection("hero")?.card3Description || "Ejes Temáticos"}</div>
           </div>
         </div>
@@ -356,9 +569,9 @@ export default function Home() {
         {/* Research Locations */}
         <div className="mt-16 max-w-6xl mx-auto">
           <h3 className="text-2xl font-bold mb-8">Lugares de Investigación</h3>
-          <div className="grid md:grid-cols-2 gap-8">
+          <div ref={institutionsRef} className="grid md:grid-cols-2 gap-8">
             {/* Institución 1 */}
-            <Card className="bg-white/10 backdrop-blur-sm border border-white/20 p-6 text-left relative overflow-hidden">
+            <Card className="institution-card bg-white/10 backdrop-blur-sm border border-white/20 p-6 text-left relative overflow-hidden" style={{ opacity: 0 }}>
               <div className="absolute inset-0 opacity-20">
                 <img 
                   src={getSection("hero")?.inst1Image || galleryImage3} 
@@ -377,7 +590,7 @@ export default function Home() {
                       {getSection("hero")?.inst1Description || "Pertenece a la IEDRI (Institución Educativa Departamental Rural Integral) Mundo Nuevo. Ubicada en el municipio de La Calera, a 30 minutos del caso urbano."}
                     </p>
                     {getSection("hero")?.inst1Link && (
-                      <a href={getSection("hero")?.inst1Link} target="_blank" rel="noopener noreferrer">
+                      <a href={getSection("hero")?.inst1Link || "#"} target="_blank" rel="noopener noreferrer">
                         <Button 
                           size="sm" 
                           className="bg-white/20 border-white/50 text-white hover:bg-white hover:text-rural-orange-dark backdrop-blur-sm font-semibold"
@@ -392,7 +605,7 @@ export default function Home() {
             </Card>
 
             {/* Institución 2 */}
-            <Card className="bg-white/10 backdrop-blur-sm border border-white/20 p-6 text-left relative overflow-hidden">
+            <Card className="institution-card bg-white/10 backdrop-blur-sm border border-white/20 p-6 text-left relative overflow-hidden" style={{ opacity: 0 }}>
               <div className="absolute inset-0 opacity-20">
                 <img 
                   src={getSection("hero")?.inst2Image || galleryImage5} 
@@ -411,7 +624,7 @@ export default function Home() {
                       {getSection("hero")?.inst2Description || "Ubicado en la localidad de Usme – Bogotá."}
                     </p>
                     {getSection("hero")?.inst2Link && (
-                      <a href={getSection("hero")?.inst2Link} target="_blank" rel="noopener noreferrer">
+                      <a href={getSection("hero")?.inst2Link || "#"} target="_blank" rel="noopener noreferrer">
                         <Button 
                           size="sm" 
                           className="bg-white/20 border-white/50 text-white hover:bg-white hover:text-rural-orange-dark backdrop-blur-sm font-semibold"
@@ -430,7 +643,7 @@ export default function Home() {
       )}
 
       {/* About Section */}
-      <section id="proyecto" className="py-16 px-8">
+      <section ref={aboutSectionRef} id="proyecto" className="py-16 px-8">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
             {getSection("about")?.title || "Sobre el Proyecto"}
@@ -487,7 +700,7 @@ export default function Home() {
       </section>
 
       {/* Team Section */}
-      <section id="equipo" className="py-16 px-8 bg-white">
+      <section ref={teamSectionRef} id="equipo" className="py-16 px-8 bg-white">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
             {getSection("team")?.title || "¿Quiénes somos?"}
@@ -570,7 +783,7 @@ export default function Home() {
       </section>
 
       {/* Project Phases Section */}
-      <section id="fases" className="py-16 px-8 bg-gray-50">
+      <section ref={phasesSectionRef} id="fases" className="py-16 px-8 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
             Fases del Proyecto
@@ -775,100 +988,110 @@ export default function Home() {
       </section>
 
       {/* Materials Section */}
-      <section id="materiales" className="py-16 px-8 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-            Materiales Descargables
-          </h2>
+      {materialsData?.materials && materialsData.materials.length > 0 && (
+        <section ref={materialsRef} id="materiales" className="py-16 px-8 bg-white">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+              Materiales Descargables
+            </h2>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { title: "Marco Teórico", type: "PDF", size: "2.5 MB", description: "Fundamentos teóricos de la investigación" },
-              { title: "Metodología", type: "PDF", size: "1.8 MB", description: "Cartografía Social Infantil detallada" },
-              { title: "Talleres Implementados", type: "ZIP", size: "15 MB", description: "Guías y materiales de todos los talleres" },
-              { title: "Resultados Preliminares", type: "PDF", size: "3.2 MB", description: "Análisis de datos y hallazgos" },
-              { title: "Malla Curricular", type: "XLSX", size: "850 KB", description: "Estructura curricular de la plataforma" },
-              { title: "Galería de Fotos", type: "ZIP", size: "45 MB", description: "Registro fotográfico del proceso" }
-            ].map((material, index) => (
-              <Card key={index} className="p-6 hover:shadow-lg transition-shadow duration-300 group cursor-pointer">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-rural-orange-light/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <FileText className="h-6 w-6 text-rural-orange-dark" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold mb-2 group-hover:text-rural-orange-dark transition-colors">
-                      {material.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-3">{material.description}</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">{material.type}</Badge>
-                        <span className="text-xs text-gray-500">{material.size}</span>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {materialsData.materials.map((material: any, index: number) => (
+                <Card key={material.id || index} className="material-card hover-card p-6 hover:shadow-lg transition-shadow duration-300 group cursor-pointer">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-rural-orange-light/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <FileText className="h-6 w-6 text-rural-orange-dark" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold mb-2 group-hover:text-rural-orange-dark transition-colors">
+                        {material.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-3">{material.description}</p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">{material.fileType}</Badge>
+                          {material.fileSize && (
+                            <span className="text-xs text-gray-500">{material.fileSize}</span>
+                          )}
+                        </div>
+                        <Button 
+                          size="sm" 
+                          className="group-hover:scale-105 transition-transform"
+                          onClick={() => {
+                            trackMaterialDownload(material.id);
+                            window.open(material.fileUrl, '_blank');
+                          }}
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Descargar
+                        </Button>
                       </div>
-                      <Button size="sm" className="group-hover:scale-105 transition-transform">
-                        <Download className="h-4 w-4 mr-2" />
-                        Descargar
-                      </Button>
                     </div>
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Interactive Gallery Section */}
-      <section id="galeria" className="py-16 px-8 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-            Galería Interactiva
-          </h2>
+      {galleryData?.items && galleryData.items.length > 0 && (
+        <section ref={gallerySectionRef} id="galeria" className="py-16 px-8 bg-gray-50">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+              Galería Interactiva
+            </h2>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { title: "Talleres de reconocimiento territorial", image: galleryImage1, description: "Actividades de cartografía social desarrolladas en el patio escolar con estudiantes" },
-              { title: "Arte mural comunitario", image: galleryImage2, description: "Expresiones artísticas territoriales en las paredes de la comunidad educativa" },
-              { title: "Instalaciones educativas", image: galleryImage3, description: "Espacios físicos donde se desarrolla el proceso educativo rural" },
-              { title: "Actividades con estudiantes", image: galleryImage4, description: "Sesiones de trabajo con los niños y niñas participantes del proyecto" },
-              { title: "Contexto rural comunitario", image: galleryImage5, description: "Entorno rural donde se desarrolla la investigación educativa" },
-              { title: "Biblioteca y recursos", image: galleryImage6, description: "Espacios de consulta y recursos educativos disponibles" },
-              { title: "Equipo investigativo", image: galleryImage7, description: "Investigadores trabajando directamente con la comunidad educativa" },
-              { title: "Desarrollo de contenidos", image: galleryImage8, description: "Reuniones de trabajo para el desarrollo de materiales educativos" },
-              { title: "Sesiones de cartografía", image: galleryImage9, description: "Talleres de mapeo territorial con estudiantes y docentes" },
-              { title: "Reuniones con docentes", image: galleryImage10, description: "Coordinación y seguimiento con el equipo educativo" },
-              { title: "Presentaciones académicas", image: galleryImage11, description: "Socialización de resultados con la comunidad educativa" }
-            ].map((item, index) => (
-              <Card key={index} className="group overflow-hidden hover:shadow-xl transition-all duration-300">
-                <div className="aspect-video relative overflow-hidden">
-                  <img 
-                    src={item.image} 
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
-                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="bg-white/90 rounded-full p-2">
-                      <Play className="h-4 w-4 text-rural-orange-dark" />
-                    </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {galleryData.items.map((item: any, index: number) => (
+                <Card 
+                  key={item.id || index} 
+                  className="gallery-item hover-card group overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer"
+                  onClick={() => {
+                    if (item.videoUrl) {
+                      trackVideoView(item.id);
+                      window.open(item.videoUrl, '_blank');
+                    }
+                  }}
+                >
+                  <div className="aspect-video relative overflow-hidden">
+                    <img 
+                      src={item.imageUrl} 
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://via.placeholder.com/800x450?text=Imagen+no+disponible';
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+                    {item.videoUrl && (
+                      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="bg-white/90 rounded-full p-2">
+                          <Play className="h-4 w-4 text-rural-orange-dark" />
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold mb-2 group-hover:text-rural-orange-dark transition-colors">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {item.description}
-                  </p>
-                </div>
-              </Card>
-            ))}
+                  <div className="p-4">
+                    <h3 className="font-semibold mb-2 group-hover:text-rural-orange-dark transition-colors">
+                      {item.title}
+                    </h3>
+                    {item.description && (
+                      <p className="text-sm text-gray-600">
+                        {item.description}
+                      </p>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Footer */}
-      <footer className="bg-rural-orange-dark text-white py-12 px-8">
+      <footer ref={footerRef} className="bg-rural-orange-dark text-white py-12 px-8">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8">
             <div>

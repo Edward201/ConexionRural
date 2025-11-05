@@ -10,9 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { DashboardNav } from "@/components/dashboard-nav";
 import { 
   Eye, Users, Clock, MousePointerClick, TrendingUp, Smartphone,
-  Monitor, Tablet, Globe, Target, ArrowUp, ArrowDown, Filter, X
+  Monitor, Tablet, Globe, Target, ArrowUp, ArrowDown, Filter, X,
+  Download, Play, FileText
 } from "lucide-react";
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -25,7 +27,6 @@ interface AnalyticsOverview {
   returningUsers: number;
   avgTimeOnPage: number;
   bounceRate: number;
-  conversions: number;
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
@@ -64,14 +65,7 @@ export default function AnalyticsEnhancedPage() {
       setLocation("/login");
     } else if (authData) {
       setCurrentUser(authData.user);
-      if (authData.user.role !== "admin") {
-        toast({
-          variant: "destructive",
-          title: "Acceso denegado",
-          description: "Solo administradores pueden acceder a analytics",
-        });
-        setLocation("/");
-      }
+      // Tanto admin como usuarios regulares pueden ver analytics
     }
   }, [authData, authLoading, setLocation]);
 
@@ -146,18 +140,6 @@ export default function AnalyticsEnhancedPage() {
     enabled: !!authData,
   });
 
-  const { data: conversionsData } = useQuery({
-    queryKey: ["analytics-conversions", timeRange, filters],
-    queryFn: async () => {
-      const response = await fetch(`/api/analytics/conversions?${buildQueryString(timeRange)}`, {
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error("Error al obtener conversiones");
-      return response.json();
-    },
-    enabled: !!authData,
-  });
-
   const { data: timelineData } = useQuery({
     queryKey: ["analytics-timeline", timeRange, filters],
     queryFn: async () => {
@@ -165,6 +147,30 @@ export default function AnalyticsEnhancedPage() {
         credentials: "include",
       });
       if (!response.ok) throw new Error("Error al obtener timeline");
+      return response.json();
+    },
+    enabled: !!authData,
+  });
+
+  const { data: downloadsData } = useQuery({
+    queryKey: ["analytics-downloads", timeRange],
+    queryFn: async () => {
+      const response = await fetch(`/api/analytics/material-downloads?days=${timeRange}`, {
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Error al obtener descargas");
+      return response.json();
+    },
+    enabled: !!authData,
+  });
+
+  const { data: videoViewsData } = useQuery({
+    queryKey: ["analytics-video-views", timeRange],
+    queryFn: async () => {
+      const response = await fetch(`/api/analytics/video-views?days=${timeRange}`, {
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Error al obtener reproducciones");
       return response.json();
     },
     enabled: !!authData,
@@ -184,7 +190,6 @@ export default function AnalyticsEnhancedPage() {
     returningUsers: 0,
     avgTimeOnPage: 0,
     bounceRate: 0,
-    conversions: 0,
   };
 
   const overviewPrevious: AnalyticsOverview | null = compareEnabled && overviewPreviousData
@@ -225,27 +230,26 @@ export default function AnalyticsEnhancedPage() {
   const hasActiveFilters = filters.source !== "all" || filters.deviceType !== "all" || filters.page !== "";
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">Web Analytics</h1>
-            <p className="text-gray-600 mt-1">Panel de métricas y estadísticas del sitio</p>
+    <>
+      <DashboardNav />
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold">Web Analytics</h1>
+              <p className="text-gray-600 mt-1">Panel de métricas y estadísticas del sitio</p>
+            </div>
+            <div className="flex gap-2 items-center">
+              <Button
+                variant={compareEnabled ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCompareEnabled(!compareEnabled)}
+              >
+                {compareEnabled ? "Comparando" : "Comparar Períodos"}
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-2 items-center">
-            <Button
-              variant={compareEnabled ? "default" : "outline"}
-              size="sm"
-              onClick={() => setCompareEnabled(!compareEnabled)}
-            >
-              {compareEnabled ? "Comparando" : "Comparar Períodos"}
-            </Button>
-            <Button variant="outline" onClick={() => setLocation("/dashboard")}>
-              Volver
-            </Button>
-          </div>
-        </div>
 
         {/* Filtros Avanzados */}
         <Card>
@@ -369,13 +373,11 @@ export default function AnalyticsEnhancedPage() {
           />
 
           <MetricCard
-            title="Conversiones"
-            icon={<Target className="h-4 w-4 text-red-600" />}
-            value={overview.conversions}
-            previous={overviewPrevious?.conversions}
-            compareEnabled={compareEnabled}
-            subtitle={`${overview.totalVisits > 0 ? ((overview.conversions / overview.totalVisits) * 100).toFixed(2) : 0}% tasa de conversión`}
-            valueColor="text-red-600"
+            title="Descargas Totales"
+            icon={<Download className="h-4 w-4 text-blue-600" />}
+            value={downloadsData?.totalDownloads || 0}
+            subtitle="Materiales descargados"
+            valueColor="text-blue-600"
           />
 
           <MetricCard
@@ -394,7 +396,8 @@ export default function AnalyticsEnhancedPage() {
             <TabsTrigger value="traffic">Tráfico</TabsTrigger>
             <TabsTrigger value="pages">Páginas</TabsTrigger>
             <TabsTrigger value="devices">Dispositivos</TabsTrigger>
-            <TabsTrigger value="conversions">Conversiones</TabsTrigger>
+            <TabsTrigger value="downloads">Descargas</TabsTrigger>
+            <TabsTrigger value="videos">Videos</TabsTrigger>
           </TabsList>
 
           {/* Tab: Tráfico */}
@@ -404,7 +407,7 @@ export default function AnalyticsEnhancedPage() {
               <Card className="col-span-2">
                 <CardHeader>
                   <CardTitle>Visitas en el Tiempo</CardTitle>
-                  <CardDescription>Evolución diaria de visitas y conversiones</CardDescription>
+                  <CardDescription>Evolución diaria de visitas y nuevos usuarios</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
@@ -416,7 +419,6 @@ export default function AnalyticsEnhancedPage() {
                       <Legend />
                       <Line type="monotone" dataKey="visits" stroke="#0088FE" name="Visitas" />
                       <Line type="monotone" dataKey="newUsers" stroke="#00C49F" name="Nuevos Usuarios" />
-                      <Line type="monotone" dataKey="conversions" stroke="#FF8042" name="Conversiones" />
                     </LineChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -484,7 +486,7 @@ export default function AnalyticsEnhancedPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Páginas Más Visitadas</CardTitle>
-                <CardDescription>Top 10 páginas con más tráfico</CardDescription>
+                <CardDescription>Secciones públicas con más tráfico</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -496,20 +498,53 @@ export default function AnalyticsEnhancedPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {pagesData?.pages.map((page: any, index: number) => (
-                      <TableRow key={index}>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{page.pageTitle || page.pageUrl}</p>
-                            <p className="text-xs text-gray-500">{page.pageUrl}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">{page.visits}</Badge>
-                        </TableCell>
-                        <TableCell>{formatTime(Math.round(page.avgTime))}</TableCell>
-                      </TableRow>
-                    ))}
+                    {pagesData?.pages
+                      .filter((page: any) => {
+                        // Filtrar rutas del dashboard y rutas administrativas
+                        const excludedPaths = [
+                          '/dashboard', '/analytics', '/login', '/register',
+                          '/content-management', '/content', '/materials-management',
+                          '/gallery-management', '/blog', '/productos', '/servicios'
+                        ];
+                        return !excludedPaths.some(path => page.pageUrl.toLowerCase().includes(path.toLowerCase()));
+                      })
+                      .sort((a: any, b: any) => {
+                        // Ordenar: primero /, luego secciones del home, luego otras
+                        if (a.pageUrl === '/') return -1;
+                        if (b.pageUrl === '/') return 1;
+                        if (a.pageUrl.startsWith('/#') && !b.pageUrl.startsWith('/#')) return -1;
+                        if (!a.pageUrl.startsWith('/#') && b.pageUrl.startsWith('/#')) return 1;
+                        return b.visits - a.visits; // Ordenar por visitas
+                      })
+                      .map((page: any, index: number) => {
+                        // Mejorar nombres de display
+                        let displayName = page.pageTitle || page.pageUrl;
+                        let displayUrl = page.pageUrl;
+                        
+                        if (page.pageUrl === '/') {
+                          displayName = 'Página Principal (Home)';
+                        } else if (page.pageUrl.startsWith('/#')) {
+                          // Formatear nombre de sección
+                          const sectionName = page.pageTitle.replace('Home - ', '');
+                          displayName = `  ${sectionName}`;
+                          displayUrl = page.pageUrl;
+                        }
+                        
+                        return (
+                          <TableRow key={index}>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{displayName}</p>
+                                <p className="text-xs text-gray-500">{displayUrl}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="secondary">{page.visits}</Badge>
+                            </TableCell>
+                            <TableCell>{formatTime(Math.round(page.avgTime))}</TableCell>
+                          </TableRow>
+                        );
+                      })}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -582,66 +617,232 @@ export default function AnalyticsEnhancedPage() {
             </div>
           </TabsContent>
 
-          {/* Tab: Conversiones */}
-          <TabsContent value="conversions">
-            <Card>
-              <CardHeader>
-                <CardTitle>Conversiones por Tipo</CardTitle>
-                <CardDescription>Objetivos alcanzados en el período</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {conversionsData?.conversions.length > 0 ? (
-                  <div className="space-y-4">
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={conversionsData?.conversions || []}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="conversionType" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="count" fill="#0088FE" name="Cantidad" />
-                      </BarChart>
-                    </ResponsiveContainer>
+          {/* Tab: Descargas de Materiales */}
+          <TabsContent value="downloads" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Download className="h-4 w-4 text-blue-600" />
+                    Total Descargas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-blue-600">
+                    {downloadsData?.totalDownloads?.toLocaleString() || 0}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">En los últimos {timeRange} días</p>
+                </CardContent>
+              </Card>
+            </div>
 
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Tipo</TableHead>
-                          <TableHead>Cantidad</TableHead>
-                          <TableHead>Valor Total</TableHead>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Timeline de Descargas */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Descargas en el Tiempo</CardTitle>
+                  <CardDescription>Evolución diaria de descargas</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={downloadsData?.downloadsTimeline || []}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="downloads" stroke="#0088FE" name="Descargas" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Descargas por Material */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Top Materiales Descargados</CardTitle>
+                  <CardDescription>Archivos más populares</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {downloadsData?.downloadsByMaterial?.length > 0 ? (
+                    <div className="space-y-3">
+                      {downloadsData.downloadsByMaterial.map((material: any, index: number) => (
+                        <div key={index} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <FileText className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium truncate">{material.title}</p>
+                              <p className="text-xs text-gray-500">{material.fileType}</p>
+                            </div>
+                          </div>
+                          <Badge variant="secondary" className="ml-2">
+                            {material.downloads} descargas
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-gray-500">
+                      <Download className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No hay descargas registradas</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Tabla detallada */}
+            {downloadsData?.downloadsByMaterial?.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Detalle de Descargas por Material</CardTitle>
+                  <CardDescription>Todos los materiales con sus estadísticas</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Material</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Descargas</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {downloadsData.downloadsByMaterial.map((material: any, index: number) => (
+                        <TableRow key={index}>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-gray-400" />
+                              <span className="font-medium">{material.title}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{material.fileType}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge>{material.downloads}</Badge>
+                          </TableCell>
                         </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {conversionsData?.conversions.map((conversion: any, index: number) => (
-                          <TableRow key={index}>
-                            <TableCell className="font-medium capitalize">
-                              {conversion.conversionType}
-                            </TableCell>
-                            <TableCell>
-                              <Badge>{conversion.count}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              {conversion.totalValue 
-                                ? `$${conversion.totalValue.toLocaleString()}`
-                                : "-"}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Tab: Reproducciones de Videos */}
+          <TabsContent value="videos" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Play className="h-4 w-4 text-purple-600" />
+                    Total Reproducciones
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-purple-600">
+                    {videoViewsData?.totalViews?.toLocaleString() || 0}
                   </div>
-                ) : (
-                  <div className="text-center py-12 text-gray-500">
-                    <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No hay conversiones registradas en este período</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  <p className="text-xs text-gray-500 mt-1">En los últimos {timeRange} días</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Timeline de Reproducciones */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Reproducciones en el Tiempo</CardTitle>
+                  <CardDescription>Evolución diaria de reproducciones</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={videoViewsData?.viewsTimeline || []}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="views" stroke="#8B5CF6" name="Reproducciones" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Reproducciones por Video */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Top Videos Reproducidos</CardTitle>
+                  <CardDescription>Videos más vistos</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {videoViewsData?.viewsByVideo?.length > 0 ? (
+                    <div className="space-y-3">
+                      {videoViewsData.viewsByVideo.map((video: any, index: number) => (
+                        <div key={index} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <Play className="h-4 w-4 text-purple-400 flex-shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium truncate">{video.title}</p>
+                            </div>
+                          </div>
+                          <Badge variant="secondary" className="ml-2">
+                            {video.views} vistas
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-gray-500">
+                      <Play className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No hay reproducciones registradas</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Tabla detallada */}
+            {videoViewsData?.viewsByVideo?.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Detalle de Reproducciones por Video</CardTitle>
+                  <CardDescription>Todos los videos con sus estadísticas</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Video</TableHead>
+                        <TableHead>Reproducciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {videoViewsData.viewsByVideo.map((video: any, index: number) => (
+                        <TableRow key={index}>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Play className="h-4 w-4 text-purple-400" />
+                              <span className="font-medium">{video.title}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge>{video.views}</Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
     </div>
+    </>
   );
 }
 

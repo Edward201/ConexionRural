@@ -10,6 +10,8 @@ import RegisterPage from "@/pages/register";
 import DashboardPage from "@/pages/dashboard";
 import AnalyticsEnhancedPage from "@/pages/analytics-enhanced";
 import ContentManagementPage from "@/pages/content-management";
+import MaterialsManagementPage from "@/pages/materials-management";
+import GalleryManagementPage from "@/pages/gallery-management";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -24,6 +26,9 @@ function Router() {
       <Route path="/dashboard" component={DashboardPage} />
       <Route path="/analytics" component={AnalyticsEnhancedPage} />
       <Route path="/content" component={ContentManagementPage} />
+      <Route path="/content-management" component={ContentManagementPage} />
+      <Route path="/materials-management" component={MaterialsManagementPage} />
+      <Route path="/gallery-management" component={GalleryManagementPage} />
       <Route component={NotFound} />
     </Switch>
   );

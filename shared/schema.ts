@@ -27,6 +27,14 @@ export const insertUserSchema = createInsertSchema(users, {
   role: true,
 });
 
+// Schema para actualizar usuario (sin password)
+export const updateUserSchema = z.object({
+  username: z.string().min(3, "El usuario debe tener al menos 3 caracteres").max(50).optional(),
+  email: z.string().email("Email inválido").optional(),
+  role: z.enum(["admin", "user"]).optional(),
+  isActive: z.boolean().optional(),
+});
+
 // Schema para login
 export const loginSchema = z.object({
   username: z.string().min(1, "Usuario requerido"),
@@ -194,3 +202,101 @@ export const insertPageContentSchema = createInsertSchema(pageContent, {
 
 export type InsertPageContent = z.infer<typeof insertPageContentSchema>;
 export type PageContent = typeof pageContent.$inferSelect;
+
+// Tabla de materiales descargables
+export const downloadableMaterials = pgTable("downloadable_materials", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  fileType: text("file_type").notNull(), // PDF, ZIP, XLSX, VIDEO, IMAGE, etc.
+  fileSize: text("file_size"), // "2.5 MB", "15 MB", etc.
+  fileUrl: text("file_url").notNull(), // URL del archivo
+  isActive: boolean("is_active").notNull().default(true),
+  order: integer("order").default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  updatedBy: integer("updated_by").references(() => users.id),
+});
+
+export const insertDownloadableMaterialSchema = createInsertSchema(downloadableMaterials, {
+  title: z.string().min(1, "El título es requerido"),
+  fileType: z.string().min(1, "El tipo de archivo es requerido"),
+  fileUrl: z.string().url("URL inválida"),
+  description: z.string().optional(),
+  fileSize: z.string().optional(),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertDownloadableMaterial = z.infer<typeof insertDownloadableMaterialSchema>;
+export type DownloadableMaterial = typeof downloadableMaterials.$inferSelect;
+
+// Tabla de galería interactiva
+export const galleryItems = pgTable("gallery_items", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url").notNull(), // URL de la imagen
+  videoUrl: text("video_url"), // URL del video (opcional) a donde redirige al hacer click
+  isActive: boolean("is_active").notNull().default(true),
+  order: integer("order").default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  updatedBy: integer("updated_by").references(() => users.id),
+});
+
+export const insertGalleryItemSchema = createInsertSchema(galleryItems, {
+  title: z.string().min(1, "El título es requerido"),
+  imageUrl: z.string().url("URL de imagen inválida"),
+  videoUrl: z.string().url("URL de video inválida").optional().or(z.literal("")),
+  description: z.string().optional(),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertGalleryItem = z.infer<typeof insertGalleryItemSchema>;
+export type GalleryItem = typeof galleryItems.$inferSelect;
+
+// Tabla de tracking de descargas de materiales
+export const materialDownloads = pgTable("material_downloads", {
+  id: serial("id").primaryKey(),
+  materialId: integer("material_id").notNull().references(() => downloadableMaterials.id),
+  sessionId: text("session_id").notNull(),
+  userId: integer("user_id").references(() => users.id),
+  deviceType: text("device_type").notNull(), // mobile, desktop, tablet
+  browser: text("browser"),
+  os: text("os"),
+  downloadedAt: timestamp("downloaded_at").notNull().defaultNow(),
+});
+
+export const insertMaterialDownloadSchema = createInsertSchema(materialDownloads).omit({
+  id: true,
+  downloadedAt: true,
+});
+
+export type InsertMaterialDownload = z.infer<typeof insertMaterialDownloadSchema>;
+export type MaterialDownload = typeof materialDownloads.$inferSelect;
+
+// Tabla de tracking de reproducciones de videos de galería
+export const videoViews = pgTable("video_views", {
+  id: serial("id").primaryKey(),
+  galleryItemId: integer("gallery_item_id").notNull().references(() => galleryItems.id),
+  sessionId: text("session_id").notNull(),
+  userId: integer("user_id").references(() => users.id),
+  deviceType: text("device_type").notNull(), // mobile, desktop, tablet
+  browser: text("browser"),
+  os: text("os"),
+  viewedAt: timestamp("viewed_at").notNull().defaultNow(),
+});
+
+export const insertVideoViewSchema = createInsertSchema(videoViews).omit({
+  id: true,
+  viewedAt: true,
+});
+
+export type InsertVideoView = z.infer<typeof insertVideoViewSchema>;
+export type VideoView = typeof videoViews.$inferSelect;

@@ -120,6 +120,32 @@
   .hover\:text-rural-orange-hover:hover {
     color: hsl(24, 100%, 35%);
   }
+
+  /* Estilos para tabs con tema naranja */
+  [data-state="active"][role="tab"] {
+    background-color: hsl(24, 95%, 53%) !important;
+    color: white !important;
+    border-color: hsl(24, 95%, 53%) !important;
+  }
+
+  [data-state="inactive"][role="tab"] {
+    color: hsl(24, 95%, 40%);
+  }
+
+  [data-state="inactive"][role="tab"]:hover {
+    background-color: hsl(24, 95%, 65%, 0.1);
+    color: hsl(24, 95%, 40%);
+  }
+
+  /* Botones del dashboard con tema naranja */
+  .dashboard-button {
+    background-color: hsl(24, 95%, 53%);
+    color: white;
+  }
+
+  .dashboard-button:hover {
+    background-color: hsl(24, 95%, 40%);
+  }
 }
 
 /* Custom Animations */

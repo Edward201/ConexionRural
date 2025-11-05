@@ -30,26 +30,42 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
+        console.log('🔐 [LOGIN] Intentando login para usuario:', username);
         const user = await storage.getUserByUsername(username);
 
         if (!user) {
+          console.log('❌ [LOGIN] Usuario no encontrado:', username);
           return done(null, false, { message: "Usuario o contraseña incorrectos" });
         }
 
+        console.log('✅ [LOGIN] Usuario encontrado:');
+        console.log('   - ID:', user.id);
+        console.log('   - Username:', user.username);
+        console.log('   - Email:', user.email);
+        console.log('   - Rol:', user.role);
+        console.log('   - Activo:', user.isActive);
+        console.log('   - Hash válido (bcrypt):', user.password?.startsWith('$2a$') || user.password?.startsWith('$2b$') ? '✅' : '❌');
+
         if (!user.isActive) {
+          console.log('⚠️ [LOGIN] Usuario inactivo:', username);
           return done(null, false, { message: "Usuario inactivo" });
         }
 
+        console.log('🔑 [LOGIN] Verificando contraseña...');
         const isValidPassword = await storage.verifyPassword(password, user.password);
+        console.log('   - Resultado:', isValidPassword ? '✅ VÁLIDA' : '❌ INVÁLIDA');
 
         if (!isValidPassword) {
+          console.log('❌ [LOGIN] Contraseña incorrecta para:', username);
           return done(null, false, { message: "Usuario o contraseña incorrectos" });
         }
 
+        console.log('✅ [LOGIN] Login exitoso para:', username);
         // No enviar la contraseña
         const { password: _, ...safeUser } = user;
         return done(null, safeUser);
       } catch (error) {
+        console.error('💥 [LOGIN] Error en autenticación:', error);
         return done(error);
       }
     })
@@ -75,7 +91,7 @@ export function setupAuth(app: Express) {
   });
 }
 
-// Middleware para proteger rutas
+// Middleware para proteger rutas (cualquier usuario autenticado)
 export function isAuthenticated(req: any, res: any, next: any) {
   if (req.isAuthenticated()) {
     return next();
@@ -89,5 +105,14 @@ export function isAdmin(req: any, res: any, next: any) {
     return next();
   }
   res.status(403).json({ message: "Acceso denegado. Solo administradores" });
+}
+
+// Middleware para verificar si es usuario regular o admin (permite ver analytics)
+export function isAuthenticatedUser(req: any, res: any, next: any) {
+  if (req.isAuthenticated()) {
+    // Tanto admin como user pueden acceder
+    return next();
+  }
+  res.status(401).json({ message: "No autenticado" });
 }
 

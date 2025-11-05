@@ -175,6 +175,43 @@ export async function trackPageView(url: string, title: string): Promise<void> {
   }
 }
 
+// Trackear vista de sección (para secciones del home)
+export async function trackSectionView(sectionName: string): Promise<void> {
+  try {
+    const location = await getLocation();
+    
+    const event: AnalyticsEvent = {
+      pageUrl: `/#${sectionName}`,
+      pageTitle: `Home - ${sectionName.charAt(0).toUpperCase() + sectionName.slice(1)}`,
+      referrer: document.referrer || null,
+      source: detectSource(),
+      medium: detectMedium(),
+      sessionId: getSessionId(),
+      isNewUser: false,
+      deviceType: getDeviceType(),
+      browser: detectBrowser(),
+      os: detectOS(),
+      screenResolution: getScreenResolution(),
+      timeOnPage: 0,
+      bounced: false,
+      converted: false,
+    };
+
+    if (location) {
+      Object.assign(event, location);
+    }
+
+    await fetch("/api/analytics/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(event),
+      keepalive: true,
+    });
+  } catch (error) {
+    console.error("Error tracking section view:", error);
+  }
+}
+
 // Trackear conversión
 export async function trackConversion(
   type: string,
@@ -267,5 +304,45 @@ export function setupAutoTracking(): void {
       startTrackingTime();
     }
   });
+}
+
+// Trackear descarga de material
+export async function trackMaterialDownload(materialId: number): Promise<void> {
+  try {
+    await fetch("/api/analytics/track-download", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        materialId,
+        sessionId: getSessionId(),
+        deviceType: getDeviceType(),
+        browser: detectBrowser(),
+        os: detectOS(),
+      }),
+      keepalive: true,
+    });
+  } catch (error) {
+    console.error("Error tracking material download:", error);
+  }
+}
+
+// Trackear reproducción de video
+export async function trackVideoView(galleryItemId: number): Promise<void> {
+  try {
+    await fetch("/api/analytics/track-video-view", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        galleryItemId,
+        sessionId: getSessionId(),
+        deviceType: getDeviceType(),
+        browser: detectBrowser(),
+        os: detectOS(),
+      }),
+      keepalive: true,
+    });
+  } catch (error) {
+    console.error("Error tracking video view:", error);
+  }
 }
 
