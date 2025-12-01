@@ -300,3 +300,27 @@ export const insertVideoViewSchema = createInsertSchema(videoViews).omit({
 
 export type InsertVideoView = z.infer<typeof insertVideoViewSchema>;
 export type VideoView = typeof videoViews.$inferSelect;
+
+// Tabla de cards del equipo (sección Quiénes somos)
+export const teamCards = pgTable("team_cards", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url"), // URL de la imagen o icono
+  order: integer("order").default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  updatedBy: integer("updated_by").references(() => users.id),
+});
+
+export const insertTeamCardSchema = z.object({
+  title: z.string().min(1, "El título es requerido"),
+  description: z.string().optional().nullable(),
+  imageUrl: z.string().optional().nullable(),
+  order: z.number().int().optional().default(0),
+  isActive: z.boolean().optional().default(true),
+});
+
+export type InsertTeamCard = z.infer<typeof insertTeamCardSchema>;
+export type TeamCard = typeof teamCards.$inferSelect;

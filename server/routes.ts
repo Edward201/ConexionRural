@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import passport from "passport";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isAdmin, isAuthenticatedUser } from "./auth";
-import { insertUserSchema, loginSchema, insertAnalyticsSchema, analytics, insertPageContentSchema, pageContent, downloadableMaterials, insertDownloadableMaterialSchema, galleryItems, insertGalleryItemSchema, materialDownloads, insertMaterialDownloadSchema, videoViews, insertVideoViewSchema } from "@shared/schema";
+import { insertUserSchema, loginSchema, insertAnalyticsSchema, analytics, insertPageContentSchema, pageContent, downloadableMaterials, insertDownloadableMaterialSchema, galleryItems, insertGalleryItemSchema, materialDownloads, insertMaterialDownloadSchema, videoViews, insertVideoViewSchema, teamCards, insertTeamCardSchema } from "@shared/schema";
 import { fromError } from "zod-validation-error";
 import { db } from "./db";
 import { eq, sql, and, gte, desc, count, asc } from "drizzle-orm";
@@ -1123,6 +1123,149 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         message: "Item de galería eliminado exitosamente",
         item: deleted,
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // ==================== RUTAS DE CARDS DEL EQUIPO ====================
+
+  // GET /api/cms/team-cards - Obtener todas las cards del equipo (público - solo activas)
+  app.get("/api/cms/team-cards", async (req, res, next) => {
+    try {
+      const cards = await db
+        .select()
+        .from(teamCards)
+        .where(eq(teamCards.isActive, true))
+        .orderBy(asc(teamCards.order));
+
+      res.json({ cards });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // GET /api/cms/team-cards/admin - Obtener todas las cards del equipo (Admin - incluye inactivas)
+  app.get("/api/cms/team-cards/admin", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const cards = await db
+        .select()
+        .from(teamCards)
+        .orderBy(asc(teamCards.order));
+
+      res.json({ cards });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // POST /api/cms/team-cards - Crear nueva card del equipo (Admin)
+  app.post("/api/cms/team-cards", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      console.log("📝 [TEAM-CARDS] Intentando crear card:", req.body);
+      
+      const result = insertTeamCardSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        console.error("❌ [TEAM-CARDS] Error de validación:", result.error);
+        return res.status(400).json({ 
+          message: "Datos inválidos", 
+          errors: fromError(result.error).toString() 
+        });
+      }
+
+      // Convertir strings vacíos a null para campos opcionales
+      const dataToInsert = {
+        title: result.data.title,
+        description: result.data.description && result.data.description.trim() !== "" ? result.data.description : null,
+        imageUrl: result.data.imageUrl && result.data.imageUrl.trim() !== "" ? result.data.imageUrl : null,
+        order: result.data.order ?? 0,
+        isActive: result.data.isActive ?? true,
+        updatedBy: (req.user as any).id,
+      };
+
+      console.log("💾 [TEAM-CARDS] Datos a insertar:", dataToInsert);
+
+      const [newCard] = await db
+        .insert(teamCards)
+        .values(dataToInsert)
+        .returning();
+
+      console.log("✅ [TEAM-CARDS] Card creada exitosamente:", newCard);
+
+      res.status(201).json({
+        message: "Card del equipo creada exitosamente",
+        card: newCard,
+      });
+    } catch (error: any) {
+      console.error("❌ [TEAM-CARDS] Error creando card del equipo:", error);
+      console.error("❌ [TEAM-CARDS] Stack:", error.stack);
+      
+      // Asegurar que siempre devolvemos JSON
+      if (!res.headersSent) {
+        return res.status(500).json({ 
+          message: "Error al crear card del equipo",
+          error: error.message || "Error desconocido"
+        });
+      }
+      next(error);
+    }
+  });
+
+  // PUT /api/cms/team-cards/:id - Actualizar card del equipo (Admin)
+  app.put("/api/cms/team-cards/:id", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { title, description, imageUrl, isActive, order } = req.body;
+
+      // Convertir strings vacíos a null para campos opcionales
+      const updateData = {
+        title,
+        description: description && description.trim() !== "" ? description : null,
+        imageUrl: imageUrl && imageUrl.trim() !== "" ? imageUrl : null,
+        isActive,
+        order: order || 0,
+        updatedAt: new Date(),
+        updatedBy: (req.user as any).id,
+      };
+
+      const [updated] = await db
+        .update(teamCards)
+        .set(updateData)
+        .where(eq(teamCards.id, parseInt(id)))
+        .returning();
+
+      if (!updated) {
+        return res.status(404).json({ message: "Card del equipo no encontrada" });
+      }
+
+      res.json({
+        message: "Card del equipo actualizada exitosamente",
+        card: updated,
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // DELETE /api/cms/team-cards/:id - Eliminar card del equipo (Admin)
+  app.delete("/api/cms/team-cards/:id", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const { id } = req.params;
+
+      const [deleted] = await db
+        .delete(teamCards)
+        .where(eq(teamCards.id, parseInt(id)))
+        .returning();
+
+      if (!deleted) {
+        return res.status(404).json({ message: "Card del equipo no encontrada" });
+      }
+
+      res.json({
+        message: "Card del equipo eliminada exitosamente",
+        card: deleted,
       });
     } catch (error) {
       next(error);

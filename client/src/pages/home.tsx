@@ -4,8 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Menu, X, ChevronRight, MapPin, Users, BookOpen, GraduationCap, ArrowRight, Play, Download, School, FileText, Calendar, Target, Mail } from "lucide-react";
-import type { PageContent } from "@shared/schema";
+import { Menu, X, ChevronRight, MapPin, Users, BookOpen, GraduationCap, ArrowRight, Play, Download, School, FileText, Calendar, Target, Mail, type LucideIcon } from "lucide-react";
+import type { PageContent, TeamCard } from "@shared/schema";
 import logoImage from "@assets/WhatsApp_Image_2025-07-24_at_10.24.37_PM-removebg-preview_1753932117331.png";
 import teresilaImage from "@assets/image_1753932694971.png";
 import galleryImage1 from "@assets/image_1753932244909.png";
@@ -161,11 +161,52 @@ export default function Home() {
     staleTime: 0, // Los datos siempre están "stale"
   });
 
+  // Obtener cards del equipo
+  const { data: teamCardsData } = useQuery({
+    queryKey: ["team-cards"],
+    queryFn: async () => {
+      const response = await fetch("/api/cms/team-cards", {
+        cache: "no-cache",
+      });
+      if (!response.ok) throw new Error("Error al cargar cards del equipo");
+      const data = await response.json();
+      return data;
+    },
+    staleTime: 0,
+  });
+
   const contents: PageContent[] = cmsData?.contents || [];
+  const teamCards: TeamCard[] = teamCardsData?.cards || [];
   
   // Función helper para obtener contenido de una sección
   const getSection = (section: string) => 
     contents.find((c) => c.section === section && c.isVisible);
+
+  // Función helper para obtener icono por nombre
+  const getIconByName = (iconName: string | null | undefined): LucideIcon => {
+    if (!iconName) return Users; // Icono por defecto
+    
+    // Si es una URL, retornar icono por defecto
+    if (iconName.startsWith('http://') || iconName.startsWith('https://')) {
+      return Users;
+    }
+    
+    // Mapeo de nombres de iconos a componentes
+    const iconMap: Record<string, LucideIcon> = {
+      Users,
+      BookOpen,
+      School,
+      GraduationCap,
+      Target,
+      Calendar,
+      FileText,
+      Download,
+      Mail,
+      MapPin,
+    };
+    
+    return iconMap[iconName] || Users;
+  };
   
   // Contadores animados con anime.js (después de getSection)
   const counter1Ref = useCountUp(getSection("hero")?.card1Number || 2, 2000, !!cmsData);
@@ -742,42 +783,80 @@ export default function Home() {
               </Card>
             </div>
 
-            {/* Co-investigators and Research Assistants */}
-            <Card className="p-6 text-center">
-              <div className="w-20 h-20 bg-rural-orange-main/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <Users className="h-10 w-10 text-rural-orange-dark" />
-              </div>
-              <h4 className="font-bold mb-2">
-                {getSection("team")?.teamCard1Title || "Coinvestigadores"}
-              </h4>
-              <p className="text-sm text-gray-600">
-                {getSection("team")?.teamCard1Description || "Equipo multidisciplinario de investigadores especializados"}
-              </p>
-            </Card>
+            {/* Cards dinámicas del equipo */}
+            {teamCards.length > 0 ? (
+              teamCards.map((card, index) => {
+                const IconComponent = getIconByName(card.imageUrl);
+                const isImageUrl = card.imageUrl && (card.imageUrl.startsWith('http://') || card.imageUrl.startsWith('https://'));
+                const bgColors = [
+                  'bg-rural-orange-main/20',
+                  'bg-rural-orange-light/30',
+                  'bg-rural-orange-main/30',
+                ];
+                const bgColor = bgColors[index % bgColors.length];
 
-            <Card className="p-6 text-center">
-              <div className="w-20 h-20 bg-rural-orange-light/30 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <BookOpen className="h-10 w-10 text-rural-orange-dark" />
-              </div>
-              <h4 className="font-bold mb-2">
-                {getSection("team")?.teamCard2Title || "Pasantes de Investigación"}
-              </h4>
-              <p className="text-sm text-gray-600">
-                {getSection("team")?.teamCard2Description || "Estudiantes en formación que apoyan el desarrollo del proyecto"}
-              </p>
-            </Card>
+                return (
+                  <Card key={card.id} className="p-6 text-center">
+                    <div className={`w-20 h-20 ${bgColor} rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden`}>
+                      {isImageUrl ? (
+                        <img 
+                          src={card.imageUrl} 
+                          alt={card.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <IconComponent className="h-10 w-10 text-rural-orange-dark" />
+                      )}
+                    </div>
+                    <h4 className="font-bold mb-2">
+                      {card.title}
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      {card.description || ""}
+                    </p>
+                  </Card>
+                );
+              })
+            ) : (
+              // Fallback a las cards antiguas si no hay cards dinámicas
+              <>
+                <Card className="p-6 text-center">
+                  <div className="w-20 h-20 bg-rural-orange-main/20 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <Users className="h-10 w-10 text-rural-orange-dark" />
+                  </div>
+                  <h4 className="font-bold mb-2">
+                    {getSection("team")?.teamCard1Title || "Coinvestigadores"}
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    {getSection("team")?.teamCard1Description || "Equipo multidisciplinario de investigadores especializados"}
+                  </p>
+                </Card>
 
-            <Card className="p-6 text-center">
-              <div className="w-20 h-20 bg-rural-orange-main/30 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <School className="h-10 w-10 text-rural-orange-dark" />
-              </div>
-              <h4 className="font-bold mb-2">
-                {getSection("team")?.teamCard3Title || "Comunidad Educativa"}
-              </h4>
-              <p className="text-sm text-gray-600">
-                {getSection("team")?.teamCard3Description || "Directivos, docentes y estudiantes participantes"}
-              </p>
-            </Card>
+                <Card className="p-6 text-center">
+                  <div className="w-20 h-20 bg-rural-orange-light/30 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <BookOpen className="h-10 w-10 text-rural-orange-dark" />
+                  </div>
+                  <h4 className="font-bold mb-2">
+                    {getSection("team")?.teamCard2Title || "Pasantes de Investigación"}
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    {getSection("team")?.teamCard2Description || "Estudiantes en formación que apoyan el desarrollo del proyecto"}
+                  </p>
+                </Card>
+
+                <Card className="p-6 text-center">
+                  <div className="w-20 h-20 bg-rural-orange-main/30 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <School className="h-10 w-10 text-rural-orange-dark" />
+                  </div>
+                  <h4 className="font-bold mb-2">
+                    {getSection("team")?.teamCard3Title || "Comunidad Educativa"}
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    {getSection("team")?.teamCard3Description || "Directivos, docentes y estudiantes participantes"}
+                  </p>
+                </Card>
+              </>
+            )}
           </div>
         </div>
       </section>

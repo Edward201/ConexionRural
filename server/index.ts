@@ -44,8 +44,16 @@ app.use((req, res, next) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
-    res.status(status).json({ message });
-    throw err;
+    console.error("❌ [ERROR HANDLER] Error no manejado:", err);
+    console.error("❌ [ERROR HANDLER] Stack:", err.stack);
+
+    // Asegurar que siempre devolvemos JSON, nunca HTML
+    if (!res.headersSent) {
+      res.status(status).json({ 
+        message,
+        error: process.env.NODE_ENV === "development" ? err.stack : undefined
+      });
+    }
   });
 
   // importantly only setup vite in development and after

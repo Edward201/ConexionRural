@@ -12,6 +12,7 @@ import AnalyticsEnhancedPage from "@/pages/analytics-enhanced";
 import ContentManagementPage from "@/pages/content-management";
 import MaterialsManagementPage from "@/pages/materials-management";
 import GalleryManagementPage from "@/pages/gallery-management";
+import TeamCardsManagementPage from "@/pages/team-cards-management";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/content-management" component={ContentManagementPage} />
       <Route path="/materials-management" component={MaterialsManagementPage} />
       <Route path="/gallery-management" component={GalleryManagementPage} />
+      <Route path="/team-cards-management" component={TeamCardsManagementPage} />
       <Route component={NotFound} />
     </Switch>
   );
